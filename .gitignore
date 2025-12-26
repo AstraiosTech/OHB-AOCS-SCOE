@@ -57,7 +57,7 @@ Aurora_SOCC/data_collection/output/
 
 # Screenshots (temp files)
 # Keep project screenshots
-!screenshots/*.png
+!OHB-AOCS-Screenshots/*.png
 
 # Except converted images from PDF
 !converted_output/**/*.jpeg
