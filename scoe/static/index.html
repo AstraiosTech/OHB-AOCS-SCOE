@@ -864,6 +864,372 @@
             background: var(--border-highlight);
         }
 
+        /* DSS Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .mode-toggle-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .mode-switch {
+            position: relative;
+            width: 52px;
+            height: 26px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-switch.active {
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+            border-color: var(--accent-purple);
+        }
+
+        .mode-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .mode-switch.active::after {
+            left: 29px;
+        }
+
+        .mode-indicator {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .mode-indicator.scoe { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); }
+        .mode-indicator.dss { background: rgba(170, 68, 255, 0.2); color: var(--accent-purple); }
+
+        /* DSS Panel Styles */
+        .dss-panel {
+            display: none;
+        }
+
+        .dss-panel.active {
+            display: block;
+        }
+
+        .dss-time-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .dss-time-box {
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .dss-time-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .dss-time-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            color: var(--accent-cyan);
+        }
+
+        .dss-time-box.epoch .dss-time-value { color: var(--accent-purple); }
+        .dss-time-box.mission .dss-time-value { color: var(--accent-amber); }
+        .dss-time-box.zulu .dss-time-value { color: var(--accent-green); }
+
+        /* Speed Factor Control */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .speed-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .speed-slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-amber), var(--accent-red));
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .speed-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* Run Duration Control */
+        .run-duration-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .duration-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .duration-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .duration-unit-select {
+            padding: 0.5rem;
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .duration-btn {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .duration-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(170, 68, 255, 0.3);
+        }
+
+        /* Script Console */
+        .script-console {
+            background: rgba(0, 5, 15, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .script-console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            background: rgba(0, 20, 40, 0.5);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .console-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-purple);
+        }
+
+        .console-output {
+            height: 120px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .console-line {
+            margin-bottom: 0.25rem;
+        }
+
+        .console-line.prompt { color: var(--accent-cyan); }
+        .console-line.response { color: var(--accent-green); }
+        .console-line.error { color: var(--accent-red); }
+
+        .console-input-row {
+            display: flex;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .console-prompt {
+            padding: 0.5rem;
+            color: var(--accent-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            background: rgba(0, 20, 40, 0.3);
+        }
+
+        .console-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .console-input:focus {
+            outline: none;
+        }
+
+        /* State Management */
+        .state-btns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .state-btn {
+            padding: 0.75rem;
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .state-btn:hover {
+            border-color: var(--accent-purple);
+            background: rgba(170, 68, 255, 0.1);
+        }
+
+        .state-btn .icon {
+            font-size: 1.1rem;
+        }
+
+        /* Model Browser */
+        .model-tree {
+            background: rgba(0, 5, 15, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .model-item {
+            padding: 0.4rem 0.5rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+        }
+
+        .model-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .model-item.selected {
+            background: rgba(0, 212, 255, 0.2);
+            border-left: 2px solid var(--accent-cyan);
+        }
+
+        .model-icon {
+            font-size: 0.8rem;
+        }
+
+        .model-name { color: var(--text-primary); }
+        .model-type { color: var(--text-muted); font-size: 0.65rem; }
+
+        /* Log Level Controls */
+        .log-level-grid {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .log-level-btn {
+            padding: 0.4rem 0.75rem;
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .log-level-btn.active {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .log-level-btn.info { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+        .log-level-btn.warning { border-color: var(--accent-amber); color: var(--accent-amber); }
+        .log-level-btn.error { border-color: var(--accent-red); color: var(--accent-red); }
+        .log-level-btn.trace { border-color: var(--accent-purple); color: var(--accent-purple); }
+
         /* Responsive */
         @media (max-width: 1400px) {
             .main-layout {
@@ -894,6 +1260,11 @@
                     <h1>AURORA SCOE</h1>
                     <span>AOCS V&V Testing Environment</span>
                 </div>
+            </div>
+            <div class="mode-toggle">
+                <span class="mode-toggle-label">MODE</span>
+                <div class="mode-switch" id="modeSwitch" onclick="toggleDSSMode()"></div>
+                <span class="mode-indicator scoe" id="modeIndicator">SCOE</span>
             </div>
             <div class="active-scenario" id="activeScenario">LEO NOMINAL OPERATIONS</div>
             <div class="status-bar">
@@ -1007,8 +1378,8 @@
 
             <!-- Center Panel - Visualization -->
             <div class="visualization-panel">
-                <!-- Simulation Control -->
-                <div class="card">
+                <!-- Simulation Control (SCOE Mode) -->
+                <div class="card scoe-panel" id="scoeSimControl">
                     <div class="card-header">
                         <div class="card-title">
                             <span>🎮</span> Simulation Control
@@ -1027,8 +1398,249 @@
                     </div>
                 </div>
 
+                <!-- DSS Simulator Control (DSS Mode) -->
+                <div class="card dss-panel" id="dssSimControl">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>🖥️</span> DSS Simulator Control
+                        </div>
+                        <span class="mode-indicator dss">RUFOS</span>
+                    </div>
+                    
+                    <!-- Time Display Grid -->
+                    <div class="dss-time-grid">
+                        <div class="dss-time-box">
+                            <div class="dss-time-label">Simulation Time</div>
+                            <div class="dss-time-value" id="dssSimTime">0.000000000</div>
+                        </div>
+                        <div class="dss-time-box epoch">
+                            <div class="dss-time-label">Epoch Time</div>
+                            <div class="dss-time-value" id="dssEpochTime">01/01/2025 12:00:00</div>
+                        </div>
+                        <div class="dss-time-box mission">
+                            <div class="dss-time-label">Mission Time</div>
+                            <div class="dss-time-value" id="dssMissionTime">00 Days 00:00:00</div>
+                        </div>
+                        <div class="dss-time-box zulu">
+                            <div class="dss-time-label">Zulu/Host Time</div>
+                            <div class="dss-time-value" id="dssZuluTime">--:--:--</div>
+                        </div>
+                    </div>
+
+                    <!-- Speed Factor Control -->
+                    <div class="speed-control">
+                        <span class="speed-label">Speed Factor:</span>
+                        <input type="range" class="speed-slider" id="speedFactorSlider" 
+                            min="0" max="100" value="10" oninput="updateSpeedFactor()">
+                        <span class="speed-value" id="speedFactorValue">1.0x</span>
+                    </div>
+
+                    <!-- DSS Simulation Controls -->
+                    <div class="sim-controls" style="margin-bottom: 1rem;">
+                        <button class="sim-btn start" onclick="dssRun()">
+                            <span>▶️</span> RUN
+                        </button>
+                        <button class="sim-btn stop" onclick="dssHold()">
+                            <span>⏸️</span> HOLD
+                        </button>
+                        <button class="sim-btn reset" style="background: linear-gradient(135deg, var(--accent-purple), #7722cc);" onclick="dssFasterThanRealtime()">
+                            <span>⏩</span> FAST
+                        </button>
+                    </div>
+
+                    <!-- Run For Duration -->
+                    <div class="run-duration-row">
+                        <input type="number" class="duration-input" id="runDuration" placeholder="Duration" value="10">
+                        <select class="duration-unit-select" id="runDurationUnit">
+                            <option value="s">seconds</option>
+                            <option value="ms">milliseconds</option>
+                            <option value="us">microseconds</option>
+                            <option value="ns">nanoseconds</option>
+                            <option value="m">minutes</option>
+                            <option value="h">hours</option>
+                        </select>
+                        <button class="duration-btn" onclick="dssRunFor()">RUN FOR</button>
+                    </div>
+                </div>
+
+                <!-- DSS State Management (DSS Mode) -->
+                <div class="card dss-panel" id="dssStatePanel">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>💾</span> State Management (Breakpoints)
+                        </div>
+                    </div>
+                    <div class="state-btns">
+                        <button class="state-btn" onclick="dssStore()">
+                            <span class="icon">📥</span> Store State
+                        </button>
+                        <button class="state-btn" onclick="dssRestore()">
+                            <span class="icon">📤</span> Restore State
+                        </button>
+                        <button class="state-btn" onclick="dssStoreNamed()">
+                            <span class="icon">💾</span> Save As...
+                        </button>
+                        <button class="state-btn" onclick="dssLoadNamed()">
+                            <span class="icon">📂</span> Load File...
+                        </button>
+                    </div>
+                    <div style="margin-top: 0.75rem;">
+                        <select class="scenario-select" id="savedStates">
+                            <option value="">-- Recent Breakpoints --</option>
+                            <option value="bp_nominal_001">bp_nominal_001.ctx</option>
+                            <option value="bp_detumble_start">bp_detumble_start.ctx</option>
+                            <option value="bp_eclipse_entry">bp_eclipse_entry.ctx</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- DSS Scripting Console (DSS Mode) -->
+                <div class="card dss-panel" id="dssScriptPanel">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>🐍</span> Rufos Python Console
+                        </div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">Python 3.9</span>
+                    </div>
+                    <div class="script-console">
+                        <div class="script-console-header">
+                            <span class="console-title">rufos &gt;&gt;&gt;</span>
+                            <button class="state-btn" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" onclick="clearConsole()">Clear</button>
+                        </div>
+                        <div class="console-output" id="consoleOutput">
+                            <div class="console-line response"># DSS Rufos Console Ready</div>
+                            <div class="console-line response"># Type Python commands to control simulation</div>
+                            <div class="console-line prompt">>>> rufos.get_state()</div>
+                            <div class="console-line response">'Standby'</div>
+                        </div>
+                        <div class="console-input-row">
+                            <span class="console-prompt">>>></span>
+                            <input type="text" class="console-input" id="consoleInput" 
+                                placeholder="Enter rufos command..." 
+                                onkeypress="handleConsoleKeypress(event)">
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Commands -->
+                    <div style="margin-top: 0.75rem;">
+                        <div class="section-title" style="font-size: 0.7rem; margin-bottom: 0.5rem;">Quick Commands</div>
+                        <div class="command-grid">
+                            <button class="command-btn" onclick="executeQuickCmd('rufos.run()')">
+                                rufos.run()
+                            </button>
+                            <button class="command-btn" onclick="executeQuickCmd('rufos.hold()')">
+                                rufos.hold()
+                            </button>
+                            <button class="command-btn" onclick="executeQuickCmd('rufos.get_simulation_time()')">
+                                get_simulation_time()
+                            </button>
+                            <button class="command-btn" onclick="executeQuickCmd('rufos.get_epoch_time_str()')">
+                                get_epoch_time()
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DSS Model Browser (DSS Mode) -->
+                <div class="card dss-panel" id="dssModelPanel">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>🔧</span> Model Browser
+                        </div>
+                    </div>
+                    <div class="model-tree" id="modelTree">
+                        <div class="model-item" onclick="selectModel('EPS')">
+                            <span class="model-icon">📦</span>
+                            <span class="model-name">EPS</span>
+                            <span class="model-type">PowerSubsystem</span>
+                        </div>
+                        <div class="model-item" onclick="selectModel('EPS.PDU')">
+                            <span class="model-icon">&nbsp;&nbsp;├─</span>
+                            <span class="model-name">PDU</span>
+                            <span class="model-type">PowerDistribution</span>
+                        </div>
+                        <div class="model-item" onclick="selectModel('EPS.PDU.BCR')">
+                            <span class="model-icon">&nbsp;&nbsp;│&nbsp;&nbsp;└─</span>
+                            <span class="model-name">BCR</span>
+                            <span class="model-type">BatteryCharger</span>
+                        </div>
+                        <div class="model-item" onclick="selectModel('AOCS')">
+                            <span class="model-icon">📦</span>
+                            <span class="model-name">AOCS</span>
+                            <span class="model-type">AttitudeControl</span>
+                        </div>
+                        <div class="model-item" onclick="selectModel('AOCS.RW')">
+                            <span class="model-icon">&nbsp;&nbsp;├─</span>
+                            <span class="model-name">RW[0..3]</span>
+                            <span class="model-type">ReactionWheel</span>
+                        </div>
+                        <div class="model-item" onclick="selectModel('AOCS.MTQ')">
+                            <span class="model-icon">&nbsp;&nbsp;├─</span>
+                            <span class="model-name">MTQ[0..2]</span>
+                            <span class="model-type">Magnetorquer</span>
+                        </div>
+                        <div class="model-item" onclick="selectModel('AOCS.SunSensor')">
+                            <span class="model-icon">&nbsp;&nbsp;└─</span>
+                            <span class="model-name">SunSensor[0..5]</span>
+                            <span class="model-type">Sensor</span>
+                        </div>
+                        <div class="model-item" onclick="selectModel('GNC')">
+                            <span class="model-icon">📦</span>
+                            <span class="model-name">GNC</span>
+                            <span class="model-type">MathModel</span>
+                        </div>
+                        <div class="model-item" onclick="selectModel('OBC')">
+                            <span class="model-icon">📦</span>
+                            <span class="model-name">OBC (cOBC)</span>
+                            <span class="model-type">OnboardComputer</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Selected Model Info -->
+                    <div style="margin-top: 0.75rem; padding: 0.5rem; background: rgba(0, 20, 40, 0.5); border-radius: 4px;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.25rem;">Selected: <span id="selectedModel" style="color: var(--accent-cyan);">AOCS.RW[0]</span></div>
+                        <div class="command-grid" style="grid-template-columns: repeat(3, 1fr);">
+                            <button class="command-btn" onclick="modelGetFields()">Fields</button>
+                            <button class="command-btn" onclick="modelGetOps()">Operations</button>
+                            <button class="command-btn" onclick="modelInjectFault()">Inject Fault</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DSS Logging Panel (DSS Mode) -->
+                <div class="card dss-panel" id="dssLogPanel">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>📋</span> Logging & Recording
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <div class="section-title" style="font-size: 0.7rem; margin-bottom: 0.5rem;">Log Levels</div>
+                        <div class="log-level-grid">
+                            <button class="log-level-btn info active" onclick="toggleLogLevel('info')">INFO</button>
+                            <button class="log-level-btn warning active" onclick="toggleLogLevel('warning')">WARNING</button>
+                            <button class="log-level-btn error active" onclick="toggleLogLevel('error')">ERROR</button>
+                            <button class="log-level-btn trace" onclick="toggleLogLevel('trace')">TRACE</button>
+                        </div>
+                    </div>
+                    <div class="state-btns">
+                        <button class="state-btn" onclick="startRecording()">
+                            <span class="icon">🔴</span> Start Recording
+                        </button>
+                        <button class="state-btn" onclick="stopRecording()">
+                            <span class="icon">⏹️</span> Stop Recording
+                        </button>
+                        <button class="state-btn" onclick="playbackRecording()">
+                            <span class="icon">▶️</span> Playback
+                        </button>
+                        <button class="state-btn" onclick="exportLogs()">
+                            <span class="icon">📤</span> Export Logs
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Attitude Visualization -->
-                <div class="card">
+                <div class="card scoe-panel">
                     <div class="card-header">
                         <div class="card-title">
                             <span>🎯</span> Attitude & Rates
@@ -1082,7 +1694,7 @@
                 </div>
 
                 <!-- Hardware Controls -->
-                <div class="card">
+                <div class="card scoe-panel">
                     <div class="card-header">
                         <div class="card-title">
                             <span>⚙️</span> Reaction Wheels
@@ -1091,7 +1703,7 @@
                     <div class="hardware-grid" id="rwGrid"></div>
                 </div>
 
-                <div class="card">
+                <div class="card scoe-panel">
                     <div class="card-header">
                         <div class="card-title">
                             <span>🔥</span> Thrusters
@@ -1100,7 +1712,7 @@
                     <div class="hardware-grid" id="thrusterGrid"></div>
                 </div>
 
-                <div class="card">
+                <div class="card scoe-panel">
                     <div class="card-header">
                         <div class="card-title">
                             <span>☀️</span> Solar Array Drive
@@ -1110,7 +1722,7 @@
                 </div>
 
                 <!-- Test Procedure Panel -->
-                <div class="procedure-panel">
+                <div class="procedure-panel scoe-panel">
                     <div class="procedure-header">
                         <div class="card-title">
                             <span>📋</span> Test Procedure
@@ -1297,6 +1909,11 @@
         let commandHistory = [];
         let eventHistory = [];
         let currentProcedureStep = 2;
+        let dssMode = false;
+        let speedFactor = 1.0;
+        let consoleHistory = [];
+        let consoleHistoryIndex = -1;
+        let selectedModelPath = 'AOCS.RW[0]';
 
         // Scenarios
         const scenarios = {
@@ -1754,10 +2371,340 @@
             }
         }
 
+        // ==================== DSS MODE FUNCTIONS ====================
+        
+        function toggleDSSMode() {
+            dssMode = !dssMode;
+            const modeSwitch = document.getElementById('modeSwitch');
+            const modeIndicator = document.getElementById('modeIndicator');
+            
+            if (dssMode) {
+                modeSwitch.classList.add('active');
+                modeIndicator.textContent = 'DSS';
+                modeIndicator.className = 'mode-indicator dss';
+                addEvent('Switched to DSS Mode', 'info');
+            } else {
+                modeSwitch.classList.remove('active');
+                modeIndicator.textContent = 'SCOE';
+                modeIndicator.className = 'mode-indicator scoe';
+                addEvent('Switched to SCOE Mode', 'info');
+            }
+            
+            // Toggle panel visibility
+            document.querySelectorAll('.scoe-panel').forEach(el => {
+                el.style.display = dssMode ? 'none' : 'block';
+            });
+            document.querySelectorAll('.dss-panel').forEach(el => {
+                el.style.display = dssMode ? 'block' : 'none';
+            });
+        }
+
+        // DSS Simulation Control
+        async function dssRun() {
+            await apiCall('/simulation/start', 'POST');
+            addConsoleOutput('>>> rufos.run()', 'prompt');
+            addConsoleOutput("Simulation running", 'response');
+            addCommand('rufos.run()');
+            addEvent('DSS: Simulation started', 'success');
+            showToast('DSS Running', true);
+        }
+
+        async function dssHold() {
+            await apiCall('/simulation/stop', 'POST');
+            addConsoleOutput('>>> rufos.hold()', 'prompt');
+            addConsoleOutput("Simulation paused", 'response');
+            addCommand('rufos.hold()');
+            addEvent('DSS: Simulation paused', 'warning');
+            showToast('DSS Paused', true);
+        }
+
+        function dssFasterThanRealtime() {
+            speedFactor = Infinity;
+            document.getElementById('speedFactorSlider').value = 100;
+            document.getElementById('speedFactorValue').textContent = '∞ (MAX)';
+            addConsoleOutput('>>> rufos.set_faster_than_realtime(True)', 'prompt');
+            addConsoleOutput("Speed factor set to infinity", 'response');
+            addCommand('rufos.set_faster_than_realtime(True)');
+            addEvent('DSS: Faster than realtime enabled', 'info');
+            showToast('Fast-forward mode enabled', true);
+        }
+
+        function updateSpeedFactor() {
+            const slider = document.getElementById('speedFactorSlider');
+            const val = parseInt(slider.value);
+            
+            if (val === 0) {
+                speedFactor = 0.1;
+            } else if (val <= 10) {
+                speedFactor = val / 10;
+            } else if (val <= 50) {
+                speedFactor = (val - 10) / 4 + 1;
+            } else if (val < 100) {
+                speedFactor = (val - 50) * 2 + 10;
+            } else {
+                speedFactor = Infinity;
+            }
+            
+            const displayVal = speedFactor === Infinity ? '∞ (MAX)' : speedFactor.toFixed(1) + 'x';
+            document.getElementById('speedFactorValue').textContent = displayVal;
+        }
+
+        async function dssRunFor() {
+            const duration = parseFloat(document.getElementById('runDuration').value);
+            const unit = document.getElementById('runDurationUnit').value;
+            
+            const unitMap = { 's': 'run_for_s', 'ms': 'run_for_ms', 'us': 'run_for_us', 'ns': 'run_for_ns' };
+            let cmd;
+            
+            if (unit === 'm') {
+                cmd = `rufos.run_for_s(${duration * 60})`;
+            } else if (unit === 'h') {
+                cmd = `rufos.run_for_s(${duration * 3600})`;
+            } else {
+                cmd = `rufos.${unitMap[unit]}(${duration})`;
+            }
+            
+            addConsoleOutput(`>>> ${cmd}`, 'prompt');
+            await apiCall('/simulation/start', 'POST');
+            addConsoleOutput(`Running for ${duration} ${unit}...`, 'response');
+            addCommand(cmd);
+            addEvent(`DSS: Running for ${duration} ${unit}`, 'info');
+            showToast(`Running for ${duration} ${unit}`, true);
+        }
+
+        // State Management
+        function dssStore() {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            const filename = `bp_${timestamp}.ctx`;
+            addConsoleOutput(`>>> rufos.store('${filename}')`, 'prompt');
+            addConsoleOutput(`Stored simulation state to ${filename}`, 'response');
+            addCommand(`rufos.store('${filename}')`);
+            addEvent(`State saved: ${filename}`, 'success');
+            showToast(`State saved: ${filename}`, true);
+        }
+
+        function dssRestore() {
+            const selected = document.getElementById('savedStates').value;
+            if (!selected) {
+                showToast('Select a breakpoint first', false);
+                return;
+            }
+            addConsoleOutput(`>>> rufos.restore('${selected}.ctx')`, 'prompt');
+            addConsoleOutput(`Restored simulation state from ${selected}.ctx`, 'response');
+            addCommand(`rufos.restore('${selected}.ctx')`);
+            addEvent(`State restored: ${selected}`, 'success');
+            showToast(`State restored: ${selected}`, true);
+        }
+
+        function dssStoreNamed() {
+            const filename = prompt('Enter breakpoint filename:', 'breakpoint_001');
+            if (filename) {
+                addConsoleOutput(`>>> rufos.store('${filename}.ctx')`, 'prompt');
+                addConsoleOutput(`Stored simulation state to ${filename}.ctx`, 'response');
+                addCommand(`rufos.store('${filename}.ctx')`);
+                addEvent(`State saved: ${filename}.ctx`, 'success');
+                showToast(`State saved: ${filename}.ctx`, true);
+            }
+        }
+
+        function dssLoadNamed() {
+            const filename = prompt('Enter breakpoint filename to load:');
+            if (filename) {
+                addConsoleOutput(`>>> rufos.restore('${filename}')`, 'prompt');
+                addConsoleOutput(`Restored simulation state from ${filename}`, 'response');
+                addCommand(`rufos.restore('${filename}')`);
+                addEvent(`State restored: ${filename}`, 'success');
+                showToast(`State restored: ${filename}`, true);
+            }
+        }
+
+        // Console Functions
+        function addConsoleOutput(text, type = 'response') {
+            const output = document.getElementById('consoleOutput');
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.textContent = text;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function handleConsoleKeypress(event) {
+            if (event.key === 'Enter') {
+                const input = document.getElementById('consoleInput');
+                const cmd = input.value.trim();
+                if (cmd) {
+                    executeConsoleCommand(cmd);
+                    consoleHistory.push(cmd);
+                    consoleHistoryIndex = consoleHistory.length;
+                    input.value = '';
+                }
+            } else if (event.key === 'ArrowUp') {
+                if (consoleHistoryIndex > 0) {
+                    consoleHistoryIndex--;
+                    document.getElementById('consoleInput').value = consoleHistory[consoleHistoryIndex];
+                }
+            } else if (event.key === 'ArrowDown') {
+                if (consoleHistoryIndex < consoleHistory.length - 1) {
+                    consoleHistoryIndex++;
+                    document.getElementById('consoleInput').value = consoleHistory[consoleHistoryIndex];
+                } else {
+                    consoleHistoryIndex = consoleHistory.length;
+                    document.getElementById('consoleInput').value = '';
+                }
+            }
+        }
+
+        function executeConsoleCommand(cmd) {
+            addConsoleOutput(`>>> ${cmd}`, 'prompt');
+            
+            // Simulate some common rufos commands
+            if (cmd.includes('get_state')) {
+                const state = telemetryData.sim_running === 1 ? 'Executing' : 'Standby';
+                addConsoleOutput(`'${state}'`, 'response');
+            } else if (cmd.includes('get_simulation_time')) {
+                addConsoleOutput(`${(telemetryData.sim_time || 0) * 1e9}`, 'response');
+            } else if (cmd.includes('get_epoch_time_str')) {
+                addConsoleOutput(`'${new Date().toLocaleString()}'`, 'response');
+            } else if (cmd.includes('run()')) {
+                dssRun();
+            } else if (cmd.includes('hold()')) {
+                dssHold();
+            } else if (cmd.includes('get_speed_factor')) {
+                addConsoleOutput(`${speedFactor}`, 'response');
+            } else if (cmd.startsWith('rufos.models.')) {
+                addConsoleOutput(`<Model: ${cmd.replace('rufos.models.', '')}>`, 'response');
+            } else {
+                addConsoleOutput(`Executed: ${cmd}`, 'response');
+            }
+            
+            addCommand(`SCRIPT: ${cmd}`);
+        }
+
+        function executeQuickCmd(cmd) {
+            document.getElementById('consoleInput').value = cmd;
+            executeConsoleCommand(cmd);
+        }
+
+        function clearConsole() {
+            document.getElementById('consoleOutput').innerHTML = 
+                '<div class="console-line response"># Console cleared</div>';
+        }
+
+        // Model Browser
+        function selectModel(path) {
+            selectedModelPath = path;
+            document.getElementById('selectedModel').textContent = path;
+            document.querySelectorAll('.model-item').forEach(el => el.classList.remove('selected'));
+            event.target.closest('.model-item').classList.add('selected');
+            addEvent(`Selected model: ${path}`, 'info');
+        }
+
+        function modelGetFields() {
+            addConsoleOutput(`>>> rufos.models.${selectedModelPath}`, 'prompt');
+            addConsoleOutput(`<Model ${selectedModelPath}>`, 'response');
+            addConsoleOutput(`  Fields: TraceLevel, Enabled, Status`, 'response');
+            addEvent(`Queried fields for ${selectedModelPath}`, 'info');
+        }
+
+        function modelGetOps() {
+            addConsoleOutput(`>>> dir(rufos.models.${selectedModelPath})`, 'prompt');
+            addConsoleOutput(`['Enable', 'Disable', 'InjectFailure', 'ClearFailure']`, 'response');
+            addEvent(`Queried operations for ${selectedModelPath}`, 'info');
+        }
+
+        function modelInjectFault() {
+            const fault = prompt('Enter fault type:', 'undervoltage');
+            if (fault) {
+                addConsoleOutput(`>>> rufos.models.${selectedModelPath}.InjectFailure("${fault}")`, 'prompt');
+                addConsoleOutput(`Fault injected: ${fault}`, 'response');
+                addCommand(`FAULT_INJECT: ${selectedModelPath}.${fault}`);
+                addEvent(`Fault injected: ${selectedModelPath} - ${fault}`, 'warning');
+                showToast(`Fault injected: ${fault}`, true);
+            }
+        }
+
+        // Logging & Recording
+        function toggleLogLevel(level) {
+            const btn = event.target;
+            btn.classList.toggle('active');
+            addEvent(`Log level ${level}: ${btn.classList.contains('active') ? 'enabled' : 'disabled'}`, 'info');
+        }
+
+        function startRecording() {
+            const filename = `recording_${Date.now()}.txt`;
+            addConsoleOutput(`>>> recording.start('${filename}')`, 'prompt');
+            addConsoleOutput(`Recording started: ${filename}`, 'response');
+            addCommand(`recording.start('${filename}')`);
+            addEvent('Recording started', 'success');
+            showToast('Recording started', true);
+        }
+
+        function stopRecording() {
+            addConsoleOutput('>>> recording.stop()', 'prompt');
+            addConsoleOutput('Recording stopped', 'response');
+            addCommand('recording.stop()');
+            addEvent('Recording stopped', 'info');
+            showToast('Recording stopped', true);
+        }
+
+        function playbackRecording() {
+            const filename = prompt('Enter recording filename:');
+            if (filename) {
+                addConsoleOutput(`>>> recording.replay('${filename}')`, 'prompt');
+                addConsoleOutput(`Replaying: ${filename}`, 'response');
+                addCommand(`recording.replay('${filename}')`);
+                addEvent(`Playback started: ${filename}`, 'info');
+                showToast('Playback started', true);
+            }
+        }
+
+        function exportLogs() {
+            addEvent('Logs exported to simulation.log', 'success');
+            showToast('Logs exported', true);
+        }
+
+        // Update DSS time displays
+        function updateDSSTimeDisplays(data) {
+            if (!dssMode) return;
+            
+            const simTime = data.sim_time || 0;
+            document.getElementById('dssSimTime').textContent = simTime.toFixed(9);
+            
+            // Epoch time (simulated)
+            const epochDate = new Date(Date.now() + simTime * 1000);
+            document.getElementById('dssEpochTime').textContent = 
+                epochDate.toLocaleDateString('en-GB') + ' ' + epochDate.toLocaleTimeString('en-GB');
+            
+            // Mission time
+            const days = Math.floor(simTime / 86400);
+            const hours = Math.floor((simTime % 86400) / 3600);
+            const mins = Math.floor((simTime % 3600) / 60);
+            const secs = Math.floor(simTime % 60);
+            document.getElementById('dssMissionTime').textContent = 
+                `${String(days).padStart(2, '0')} Days ${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            
+            // Zulu time (host time)
+            document.getElementById('dssZuluTime').textContent = new Date().toLocaleTimeString('en-GB');
+        }
+
+        // Extend telemetry update to include DSS displays
+        const originalUpdateTelemetryUI = updateTelemetryUI;
+        updateTelemetryUI = function(data) {
+            originalUpdateTelemetryUI(data);
+            updateDSSTimeDisplays(data);
+        };
+
         // Initialize
         initUI();
         pollTelemetry();
         setInterval(pollTelemetry, 500);
+        
+        // Update Zulu time every second
+        setInterval(() => {
+            if (dssMode) {
+                document.getElementById('dssZuluTime').textContent = new Date().toLocaleTimeString('en-GB');
+            }
+        }, 1000);
     </script>
 </body>
 </html>
