@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora SOCC - Mission Control</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/nasa-theme.css">
+    <script src="/static/js/theme-switcher.js" defer></script>
+</head>
+<body>
+    <div class="starfield"></div>
+    <div class="grid-overlay"></div>
+    
+    <div class="splash-container">
+        <div class="logo-section">
+            <h1 class="logo">AURORA</h1>
+            <p class="logo-subtitle">Satellite Operations Control Center</p>
+            <div class="mission-badge">AOCS SCOE V&V TESTING ENVIRONMENT</div>
+        </div>
+        
+        <div class="scenario-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Select Initial Conditions</h2>
+                <div class="status-indicator">
+                    <span class="status-dot" id="scoeStatus"></span>
+                    <span id="scoeStatusText">SCOE Ready</span>
+                </div>
+            </div>
+            
+            <div class="scenario-grid" id="scenarioGrid">
+                <!-- Scenarios will be loaded dynamically -->
+            </div>
+            
+            <div class="selected-scenario" id="selectedScenarioInfo" style="display: none;">
+                <div class="panel-header" style="border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 20px;">
+                    <h3 class="panel-title" style="font-size: 0.9rem;">Selected Scenario Details</h3>
+                </div>
+                <div id="scenarioDetails" style="padding: 15px; background: rgba(0,20,40,0.4); border-radius: 4px; margin-top: 10px;">
+                </div>
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="refreshScenarios()">
+                    ↻ Refresh
+                </button>
+                <button class="btn btn-primary" id="launchBtn" onclick="launchSOCC()" disabled>
+                    ▶ Inject & Launch SOCC
+                </button>
+            </div>
+        </div>
+        
+        <!-- CCSDS Data Source Panel -->
+        <div class="scenario-panel" style="margin-top: 20px; max-width: 600px;">
+            <div class="panel-header">
+                <h2 class="panel-title">📡 CCSDS Data Source</h2>
+                <div class="status-indicator">
+                    <span class="status-dot" id="ccsdsStatusDot" style="background: var(--text-muted);"></span>
+                    <span id="ccsdsStatusText">CCSDS OFF</span>
+                </div>
+            </div>
+            
+            <div style="padding: 15px 0;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn btn-secondary" id="ccsdsStartBtn" onclick="toggleCCSDS(true)" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span style="color: var(--accent-green);">▶</span> Start CCSDS
+                    </button>
+                    <button class="btn btn-secondary" id="ccsdsStopBtn" onclick="toggleCCSDS(false)" style="display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0.5;">
+                        <span style="color: var(--accent-red);">■</span> Stop CCSDS
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn" id="srcSimBtn" onclick="setTelemetrySource('simulation')" style="background: rgba(0, 212, 255, 0.2); border: 1px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span>◈</span> Use Simulation
+                    </button>
+                    <button class="btn btn-secondary" id="srcCcsdsBtn" onclick="setTelemetrySource('ccsds')" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span>📡</span> Use CCSDS
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 15px; background: rgba(0,20,40,0.4); border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem;">
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 5px;">UDP PORT</div>
+                        <div style="color: var(--accent-cyan);">5003</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 5px;">PACKETS/SEC</div>
+                        <div style="color: var(--accent-cyan);" id="ccsdsRate">0.0</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 5px;">TOTAL RX</div>
+                        <div style="color: var(--accent-cyan);" id="ccsdsTotalPkts">0</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; padding: 10px; background: rgba(0,50,100,0.2); border-radius: 4px; border-left: 3px solid var(--accent-cyan);">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        <strong style="color: var(--accent-cyan);">Current Source:</strong> 
+                        <span id="currentSourceLabel" style="color: var(--accent-amber);">SIMULATION</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Navigation -->
+        <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+            <button class="btn btn-secondary" onclick="window.location.href='/constellation'" style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.2rem;">🌐</span> Constellation View
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='/console'" style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.2rem;">📟</span> Operations Console
+            </button>
+        </div>
+        
+        <div style="margin-top: 40px; text-align: center; opacity: 0.5;">
+            <p style="font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">
+                EGSE LINK: <span id="egseStatus" style="color: var(--accent-green);">CONNECTED</span> | 
+                FLATSAT: <span id="flatsatStatus" style="color: var(--accent-green);">ONLINE</span> | 
+                SCOE: <span id="scoeConnectionStatus" style="color: var(--accent-green);">READY</span>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        let selectedScenario = null;
+        let scenarios = [];
+        let ccsdsRunning = false;
+        let telemetrySource = 'simulation';
+        
+        // Load scenarios on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadScenarios();
+            fetchCCSDSStatus();
+            // Poll CCSDS status every 2 seconds
+            setInterval(fetchCCSDSStatus, 2000);
+        });
+        
+        // ========== CCSDS Control Functions ==========
+        
+        function toggleCCSDS(start) {
+            const endpoint = start ? '/api/ccsds/start' : '/api/ccsds/stop';
+            const btn = start ? document.getElementById('ccsdsStartBtn') : document.getElementById('ccsdsStopBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '◐ Working...';
+            btn.disabled = true;
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    ccsdsRunning = start;
+                    updateCCSDSUI();
+                    console.log('CCSDS ' + (start ? 'started' : 'stopped'));
+                } else {
+                    console.error('CCSDS error:', data.error);
+                    alert('CCSDS error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('CCSDS communication error:', err);
+                alert('Communication error: ' + err);
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+        
+        function setTelemetrySource(source) {
+            fetch('/api/telemetry/source', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source: source })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    telemetrySource = source;
+                    updateTelemetrySourceUI();
+                    console.log('Telemetry source set to: ' + source);
+                } else {
+                    console.error('Error setting telemetry source:', data.error);
+                    alert('Error: ' + (data.error || 'Unknown'));
+                }
+            })
+            .catch(err => {
+                console.error('Telemetry source error:', err);
+                alert('Communication error: ' + err);
+            });
+        }
+        
+        function updateCCSDSUI() {
+            const statusDot = document.getElementById('ccsdsStatusDot');
+            const statusText = document.getElementById('ccsdsStatusText');
+            const startBtn = document.getElementById('ccsdsStartBtn');
+            const stopBtn = document.getElementById('ccsdsStopBtn');
+            
+            if (ccsdsRunning) {
+                statusDot.style.background = 'var(--accent-green)';
+                statusDot.style.boxShadow = '0 0 10px var(--accent-green)';
+                statusText.textContent = 'CCSDS ON';
+                statusText.style.color = 'var(--accent-green)';
+                startBtn.style.opacity = '0.5';
+                stopBtn.style.opacity = '1';
+            } else {
+                statusDot.style.background = 'var(--text-muted)';
+                statusDot.style.boxShadow = 'none';
+                statusText.textContent = 'CCSDS OFF';
+                statusText.style.color = 'var(--text-muted)';
+                startBtn.style.opacity = '1';
+                stopBtn.style.opacity = '0.5';
+            }
+        }
+        
+        function updateTelemetrySourceUI() {
+            const simBtn = document.getElementById('srcSimBtn');
+            const ccsdsBtn = document.getElementById('srcCcsdsBtn');
+            const sourceLabel = document.getElementById('currentSourceLabel');
+            
+            if (telemetrySource === 'simulation') {
+                simBtn.style.background = 'rgba(0, 212, 255, 0.2)';
+                simBtn.style.border = '1px solid var(--accent-cyan)';
+                ccsdsBtn.style.background = 'transparent';
+                ccsdsBtn.style.border = '1px solid var(--border-color)';
+                sourceLabel.textContent = 'SIMULATION';
+                sourceLabel.style.color = 'var(--accent-amber)';
+            } else {
+                ccsdsBtn.style.background = 'rgba(0, 212, 255, 0.2)';
+                ccsdsBtn.style.border = '1px solid var(--accent-cyan)';
+                simBtn.style.background = 'transparent';
+                simBtn.style.border = '1px solid var(--border-color)';
+                sourceLabel.textContent = 'CCSDS UDP';
+                sourceLabel.style.color = 'var(--accent-green)';
+            }
+        }
+        
+        function fetchCCSDSStatus() {
+            fetch('/api/ccsds/status')
+            .then(response => response.json())
+            .then(data => {
+                ccsdsRunning = data.running;
+                updateCCSDSUI();
+                
+                // Update rate display
+                const rateEl = document.getElementById('ccsdsRate');
+                if (rateEl) {
+                    rateEl.textContent = (data.packets_per_second || 0).toFixed(1);
+                }
+                
+                // Update total packets
+                const totalEl = document.getElementById('ccsdsTotalPkts');
+                if (totalEl && data.decoder_stats) {
+                    totalEl.textContent = data.decoder_stats.packets_received || 0;
+                }
+                
+                // Update telemetry source
+                if (data.telemetry_source) {
+                    telemetrySource = data.telemetry_source;
+                    updateTelemetrySourceUI();
+                }
+            })
+            .catch(err => {
+                console.log('CCSDS status fetch error (may be normal):', err);
+            });
+        }
+        
+        async function loadScenarios() {
+            try {
+                const response = await fetch('/api/scenarios');
+                scenarios = await response.json();
+                renderScenarios();
+            } catch (error) {
+                console.error('Failed to load scenarios:', error);
+                // Show demo scenarios
+                renderDemoScenarios();
+            }
+        }
+        
+        function renderScenarios() {
+            const grid = document.getElementById('scenarioGrid');
+            grid.innerHTML = '';
+            
+            scenarios.forEach((scenario, index) => {
+                const card = document.createElement('div');
+                card.className = 'scenario-card';
+                card.dataset.index = index;
+                card.onclick = () => selectScenario(index);
+                
+                card.innerHTML = `
+                    <div class="scenario-category">${scenario.category}</div>
+                    <div class="scenario-name">${scenario.name}</div>
+                    <div class="scenario-description">${scenario.description}</div>
+                    <div class="scenario-version">v${scenario.version}</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderDemoScenarios() {
+            // Demo scenarios for when API is not available
+            scenarios = [
+                { id: 'LEO_NOMINAL_001', name: 'LEO Nominal Operations', category: 'Nominal', description: 'Standard Low Earth Orbit nominal conditions for baseline testing', version: '1.0.0' },
+                { id: 'LEO_ECLIPSE_001', name: 'LEO Eclipse Entry', category: 'Transitions', description: 'Satellite entering eclipse - tests power management', version: '1.0.0' },
+                { id: 'DETUMBLE_001', name: 'High Rate Detumble', category: 'Safe Mode', description: 'Post-separation tumbling scenario - tests B-dot algorithm', version: '1.0.0' },
+                { id: 'SLEW_LARGE_001', name: 'Large Angle Slew', category: 'Maneuvers', description: '90-degree slew maneuver - tests reaction wheel control', version: '1.0.0' },
+                { id: 'SAFE_MODE_001', name: 'Safe Mode Recovery', category: 'Recovery', description: 'Recovery from safe mode to nominal operations', version: '1.0.0' },
+                { id: 'GS_PASS_001', name: 'Ground Station Pass', category: 'Communications', description: 'Simulates a ground station contact window', version: '1.0.0' }
+            ];
+            renderScenarios();
+        }
+        
+        function selectScenario(index) {
+            // Clear previous selection
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Select new scenario
+            const cards = document.querySelectorAll('.scenario-card');
+            cards[index].classList.add('selected');
+            selectedScenario = scenarios[index];
+            
+            // Enable launch button
+            document.getElementById('launchBtn').disabled = false;
+            
+            // Show scenario details
+            showScenarioDetails(selectedScenario);
+        }
+        
+        function showScenarioDetails(scenario) {
+            const infoPanel = document.getElementById('selectedScenarioInfo');
+            const detailsDiv = document.getElementById('scenarioDetails');
+            
+            infoPanel.style.display = 'block';
+            
+            detailsDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 5px;">SCENARIO ID</div>
+                        <div style="font-family: 'Share Tech Mono', monospace; color: var(--accent-cyan);">${scenario.id}</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 5px;">CATEGORY</div>
+                        <div style="color: var(--accent-amber);">${scenario.category}</div>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 5px;">DESCRIPTION</div>
+                        <div>${scenario.description}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function refreshScenarios() {
+            selectedScenario = null;
+            document.getElementById('launchBtn').disabled = true;
+            document.getElementById('selectedScenarioInfo').style.display = 'none';
+            loadScenarios();
+        }
+        
+        async function launchSOCC() {
+            if (!selectedScenario) return;
+            
+            const btn = document.getElementById('launchBtn');
+            btn.textContent = '◐ INJECTING...';
+            btn.disabled = true;
+            
+            try {
+                // Inject scenario
+                const response = await fetch('/api/inject', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scenario_id: selectedScenario.id })
+                });
+                
+                if (response.ok) {
+                    btn.textContent = '✓ LAUNCHING...';
+                    setTimeout(() => {
+                        window.location.href = '/console';
+                    }, 1000);
+                } else {
+                    throw new Error('Injection failed');
+                }
+            } catch (error) {
+                console.error('Launch error:', error);
+                // Continue anyway in demo mode
+                btn.textContent = '✓ LAUNCHING...';
+                setTimeout(() => {
+                    window.location.href = '/console?scenario=' + selectedScenario.id;
+                }, 1000);
+            }
+        }
+        
+        // Simulate status updates
+        setInterval(() => {
+            const statuses = ['SCOE Ready', 'SCOE Active', 'SCOE Standby'];
+            // Keep status green for demo
+        }, 5000);
+    </script>
+</body>
+</html>
+

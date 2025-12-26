@@ -1,0 +1,713 @@
+/* ============================================
+   Aurora SOCC - NASA-Compliant Theme
+   ============================================
+   Based on NASA-STD-3001 Volume 2 and Appendix F
+   Display Standard Requirements
+   ============================================ */
+
+/* 
+   NASA Display Standard Key Requirements:
+   - Minimum 12pt font size (14px)
+   - High contrast ratios (7:1 for text)
+   - Redundant coding (color + shape)
+   - No decorative/distracting elements
+   - Muted, standardized color palette
+   - Clear status indication
+   - Units always displayed
+   - Confirmation for critical actions
+*/
+
+:root {
+    /* NASA Standard Color Palette */
+    --nasa-bg-primary: #1a1a2e;
+    --nasa-bg-secondary: #16213e;
+    --nasa-bg-panel: #1f2940;
+    --nasa-bg-input: #0f1629;
+    
+    /* Status Colors (NASA Standard) */
+    --nasa-nominal: #00aa00;      /* Green - Normal/Go */
+    --nasa-caution: #ffaa00;      /* Amber - Caution */
+    --nasa-warning: #ff4444;      /* Red - Warning/Stop */
+    --nasa-standby: #4488ff;      /* Blue - Standby/Info */
+    --nasa-off: #666666;          /* Gray - Off/Stale */
+    
+    /* Text Colors (High Contrast) */
+    --nasa-text-primary: #ffffff;
+    --nasa-text-secondary: #cccccc;
+    --nasa-text-label: #aaaaaa;
+    
+    /* Borders */
+    --nasa-border: #3a4a6a;
+    --nasa-border-light: #4a5a7a;
+    
+    /* Minimum font size: 14px */
+    --nasa-font-min: 14px;
+    --nasa-font-data: 16px;
+    --nasa-font-header: 18px;
+}
+
+/* ============================================
+   Base Styles - NASA Compliant
+   ============================================ */
+
+body.nasa-theme {
+    font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    background: var(--nasa-bg-primary);
+    color: var(--nasa-text-primary);
+    font-size: var(--nasa-font-min);
+    line-height: 1.5;
+}
+
+/* Remove decorative elements */
+body.nasa-theme .starfield,
+body.nasa-theme .starfield::before,
+body.nasa-theme .starfield::after,
+body.nasa-theme .grid-overlay {
+    display: none !important;
+}
+
+/* Remove all animations and transitions */
+body.nasa-theme *,
+body.nasa-theme *::before,
+body.nasa-theme *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Remove glow effects */
+body.nasa-theme [style*="box-shadow"],
+body.nasa-theme [style*="filter"],
+body.nasa-theme [style*="text-shadow"] {
+    box-shadow: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+}
+
+/* ============================================
+   Header - NASA Style
+   ============================================ */
+
+body.nasa-theme .socc-header {
+    background: var(--nasa-bg-secondary);
+    border-bottom: 2px solid var(--nasa-border);
+    padding: 12px 20px;
+}
+
+body.nasa-theme .socc-title {
+    font-family: 'Arial', sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--nasa-text-primary);
+    letter-spacing: 0.05em;
+}
+
+body.nasa-theme .socc-status {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: var(--nasa-font-min);
+    gap: 25px;
+}
+
+body.nasa-theme .status-label {
+    color: var(--nasa-text-label);
+    font-weight: bold;
+}
+
+body.nasa-theme .status-value {
+    color: var(--nasa-nominal);
+    font-weight: bold;
+}
+
+body.nasa-theme .status-value.warning {
+    color: var(--nasa-caution);
+}
+
+body.nasa-theme .status-value.error {
+    color: var(--nasa-warning);
+}
+
+/* Status indicator with shape + color (redundant coding) */
+body.nasa-theme .status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+body.nasa-theme .status-dot::after {
+    content: '●';
+    font-size: 14px;
+    color: var(--nasa-nominal);
+}
+
+body.nasa-theme .status-dot.warning::after {
+    content: '▲';
+    color: var(--nasa-caution);
+}
+
+body.nasa-theme .status-dot.error::after {
+    content: '■';
+    color: var(--nasa-warning);
+}
+
+/* ============================================
+   Panels - NASA Style
+   ============================================ */
+
+body.nasa-theme .command-panel,
+body.nasa-theme .visualization-panel,
+body.nasa-theme .telemetry-panel,
+body.nasa-theme .scenario-panel,
+body.nasa-theme .test-procedure-panel {
+    background: var(--nasa-bg-panel);
+    border: 2px solid var(--nasa-border);
+    border-radius: 4px;
+}
+
+body.nasa-theme .panel-header,
+body.nasa-theme .viz-header,
+body.nasa-theme .telemetry-header {
+    border-bottom: 2px solid var(--nasa-border);
+    padding: 10px 15px;
+}
+
+body.nasa-theme .panel-title,
+body.nasa-theme .section-title,
+body.nasa-theme .telemetry-title {
+    font-family: 'Arial', sans-serif;
+    font-size: var(--nasa-font-header);
+    font-weight: bold;
+    color: var(--nasa-text-primary);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* ============================================
+   Buttons - NASA Style
+   ============================================ */
+
+body.nasa-theme .btn,
+body.nasa-theme .command-btn {
+    font-family: 'Arial', sans-serif;
+    font-size: var(--nasa-font-min);
+    font-weight: bold;
+    padding: 10px 20px;
+    border: 2px solid var(--nasa-border);
+    border-radius: 4px;
+    background: var(--nasa-bg-secondary);
+    color: var(--nasa-text-primary);
+    cursor: pointer;
+}
+
+body.nasa-theme .btn:hover,
+body.nasa-theme .command-btn:hover {
+    background: var(--nasa-bg-input);
+    border-color: var(--nasa-standby);
+}
+
+body.nasa-theme .btn-primary {
+    background: var(--nasa-standby);
+    border-color: var(--nasa-standby);
+    color: #ffffff;
+}
+
+body.nasa-theme .btn-primary:hover {
+    background: #3377dd;
+}
+
+body.nasa-theme .btn-primary:disabled {
+    background: var(--nasa-off);
+    border-color: var(--nasa-off);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+body.nasa-theme .btn-danger {
+    background: var(--nasa-warning);
+    border-color: var(--nasa-warning);
+    color: #ffffff;
+}
+
+body.nasa-theme .btn-success {
+    background: var(--nasa-nominal);
+    border-color: var(--nasa-nominal);
+    color: #ffffff;
+}
+
+body.nasa-theme .btn-secondary {
+    background: transparent;
+    border-color: var(--nasa-border-light);
+    color: var(--nasa-text-primary);
+}
+
+/* ============================================
+   Data Display - NASA Style
+   ============================================ */
+
+body.nasa-theme .telemetry-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--nasa-border);
+    font-size: var(--nasa-font-min);
+}
+
+body.nasa-theme .telemetry-label {
+    color: var(--nasa-text-label);
+    font-weight: 500;
+}
+
+body.nasa-theme .telemetry-value {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: var(--nasa-font-data);
+    font-weight: bold;
+    color: var(--nasa-text-primary);
+}
+
+/* Status values with redundant coding */
+body.nasa-theme .telemetry-value.nominal::before {
+    content: '● ';
+    color: var(--nasa-nominal);
+}
+
+body.nasa-theme .telemetry-value.nominal {
+    color: var(--nasa-nominal);
+}
+
+body.nasa-theme .telemetry-value.warning::before {
+    content: '▲ ';
+    color: var(--nasa-caution);
+}
+
+body.nasa-theme .telemetry-value.warning {
+    color: var(--nasa-caution);
+}
+
+body.nasa-theme .telemetry-value.critical::before {
+    content: '■ ';
+    color: var(--nasa-warning);
+}
+
+body.nasa-theme .telemetry-value.critical {
+    color: var(--nasa-warning);
+}
+
+/* Telemetry group headers */
+body.nasa-theme .telemetry-group-title {
+    font-family: 'Arial', sans-serif;
+    font-size: var(--nasa-font-min);
+    font-weight: bold;
+    color: var(--nasa-standby);
+    border-bottom: 2px solid var(--nasa-standby);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+/* ============================================
+   Attitude Display - NASA Style
+   ============================================ */
+
+body.nasa-theme .attitude-axis {
+    background: var(--nasa-bg-input);
+    border: 2px solid var(--nasa-border);
+    border-radius: 4px;
+    padding: 15px;
+}
+
+body.nasa-theme .axis-label {
+    font-family: 'Arial', sans-serif;
+    font-size: var(--nasa-font-min);
+    font-weight: bold;
+    color: var(--nasa-text-label);
+    margin-bottom: 8px;
+}
+
+body.nasa-theme .axis-value {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--nasa-text-primary);
+}
+
+body.nasa-theme .axis-unit {
+    font-size: var(--nasa-font-min);
+    color: var(--nasa-text-label);
+    margin-left: 4px;
+}
+
+/* ============================================
+   Event Log - NASA Style
+   ============================================ */
+
+body.nasa-theme .event-log {
+    background: var(--nasa-bg-input);
+    border: 2px solid var(--nasa-border);
+    border-radius: 4px;
+    padding: 10px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: var(--nasa-font-min);
+}
+
+body.nasa-theme .log-entry {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--nasa-border);
+}
+
+body.nasa-theme .log-time {
+    color: var(--nasa-text-label);
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+body.nasa-theme .log-message {
+    color: var(--nasa-text-primary);
+}
+
+body.nasa-theme .log-message.info {
+    color: var(--nasa-standby);
+}
+
+body.nasa-theme .log-message.info::before {
+    content: '[INFO] ';
+}
+
+body.nasa-theme .log-message.success {
+    color: var(--nasa-nominal);
+}
+
+body.nasa-theme .log-message.success::before {
+    content: '[OK] ';
+}
+
+body.nasa-theme .log-message.warning {
+    color: var(--nasa-caution);
+}
+
+body.nasa-theme .log-message.warning::before {
+    content: '[CAUTION] ';
+}
+
+body.nasa-theme .log-message.error {
+    color: var(--nasa-warning);
+}
+
+body.nasa-theme .log-message.error::before {
+    content: '[WARNING] ';
+}
+
+/* ============================================
+   Test Procedures - NASA Style
+   ============================================ */
+
+body.nasa-theme .procedure-step {
+    background: var(--nasa-bg-input);
+    border: 2px solid var(--nasa-border);
+    border-radius: 4px;
+    padding: 12px 15px;
+}
+
+body.nasa-theme .step-number {
+    width: 32px;
+    height: 32px;
+    background: var(--nasa-bg-secondary);
+    border: 2px solid var(--nasa-border);
+    border-radius: 4px;
+    font-family: 'Arial', sans-serif;
+    font-size: var(--nasa-font-min);
+    font-weight: bold;
+    color: var(--nasa-text-primary);
+}
+
+body.nasa-theme .procedure-step.completed .step-number {
+    background: var(--nasa-nominal);
+    border-color: var(--nasa-nominal);
+    color: #ffffff;
+}
+
+body.nasa-theme .procedure-step.completed .step-number::after {
+    content: ' ✓';
+}
+
+body.nasa-theme .procedure-step.active .step-number {
+    background: var(--nasa-standby);
+    border-color: var(--nasa-standby);
+    color: #ffffff;
+}
+
+body.nasa-theme .step-title {
+    font-size: var(--nasa-font-min);
+    font-weight: bold;
+    color: var(--nasa-text-primary);
+}
+
+body.nasa-theme .step-description {
+    font-size: var(--nasa-font-min);
+    color: var(--nasa-text-secondary);
+}
+
+body.nasa-theme .step-status {
+    font-family: 'Arial', sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 2px;
+    border: 1px solid;
+}
+
+body.nasa-theme .step-status.pending {
+    background: var(--nasa-bg-secondary);
+    border-color: var(--nasa-off);
+    color: var(--nasa-off);
+}
+
+body.nasa-theme .step-status.running {
+    background: rgba(68, 136, 255, 0.2);
+    border-color: var(--nasa-standby);
+    color: var(--nasa-standby);
+}
+
+body.nasa-theme .step-status.pass {
+    background: rgba(0, 170, 0, 0.2);
+    border-color: var(--nasa-nominal);
+    color: var(--nasa-nominal);
+}
+
+body.nasa-theme .step-status.pass::before {
+    content: '● ';
+}
+
+body.nasa-theme .step-status.fail {
+    background: rgba(255, 68, 68, 0.2);
+    border-color: var(--nasa-warning);
+    color: var(--nasa-warning);
+}
+
+body.nasa-theme .step-status.fail::before {
+    content: '■ ';
+}
+
+/* ============================================
+   Scenario Cards - NASA Style
+   ============================================ */
+
+body.nasa-theme .scenario-card {
+    background: var(--nasa-bg-input);
+    border: 2px solid var(--nasa-border);
+    border-radius: 4px;
+    padding: 15px;
+}
+
+body.nasa-theme .scenario-card:hover {
+    border-color: var(--nasa-standby);
+}
+
+body.nasa-theme .scenario-card.selected {
+    border-color: var(--nasa-nominal);
+    background: rgba(0, 170, 0, 0.1);
+}
+
+body.nasa-theme .scenario-card::before {
+    display: none;
+}
+
+body.nasa-theme .scenario-category {
+    font-family: 'Arial', sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--nasa-caution);
+    text-transform: uppercase;
+}
+
+body.nasa-theme .scenario-name {
+    font-family: 'Arial', sans-serif;
+    font-size: var(--nasa-font-min);
+    font-weight: bold;
+    color: var(--nasa-text-primary);
+}
+
+body.nasa-theme .scenario-description {
+    font-size: var(--nasa-font-min);
+    color: var(--nasa-text-secondary);
+    line-height: 1.4;
+}
+
+body.nasa-theme .scenario-version {
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    color: var(--nasa-text-label);
+}
+
+/* ============================================
+   Splash Page - NASA Style
+   ============================================ */
+
+body.nasa-theme .logo {
+    font-family: 'Arial', sans-serif;
+    font-size: 48px;
+    font-weight: bold;
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: var(--nasa-text-primary);
+    background-clip: unset;
+    color: var(--nasa-text-primary);
+    filter: none;
+    letter-spacing: 0.1em;
+}
+
+body.nasa-theme .logo-subtitle {
+    font-family: 'Arial', sans-serif;
+    font-size: var(--nasa-font-min);
+    color: var(--nasa-text-secondary);
+    letter-spacing: 0.2em;
+}
+
+body.nasa-theme .mission-badge {
+    font-family: 'Arial', sans-serif;
+    font-size: var(--nasa-font-min);
+    font-weight: bold;
+    border: 2px solid var(--nasa-standby);
+    color: var(--nasa-standby);
+    padding: 8px 20px;
+}
+
+/* ============================================
+   Tabs - NASA Style
+   ============================================ */
+
+body.nasa-theme .viz-tab {
+    font-family: 'Arial', sans-serif;
+    font-size: var(--nasa-font-min);
+    font-weight: 500;
+    padding: 8px 16px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    color: var(--nasa-text-secondary);
+}
+
+body.nasa-theme .viz-tab:hover {
+    color: var(--nasa-text-primary);
+    background: var(--nasa-bg-input);
+}
+
+body.nasa-theme .viz-tab.active {
+    background: var(--nasa-bg-input);
+    border-color: var(--nasa-standby);
+    color: var(--nasa-standby);
+    font-weight: bold;
+}
+
+/* ============================================
+   Theme Switcher
+   ============================================ */
+
+.theme-switcher {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 9999;
+    display: flex;
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #444;
+}
+
+.theme-btn {
+    font-family: 'Arial', sans-serif;
+    font-size: 12px;
+    padding: 6px 12px;
+    border: 1px solid #666;
+    border-radius: 3px;
+    cursor: pointer;
+    background: #333;
+    color: #fff;
+}
+
+.theme-btn:hover {
+    background: #444;
+}
+
+.theme-btn.active {
+    background: #0066cc;
+    border-color: #0088ff;
+}
+
+/* NASA theme specific switcher styling */
+body.nasa-theme .theme-switcher {
+    background: var(--nasa-bg-panel);
+    border: 2px solid var(--nasa-border);
+}
+
+body.nasa-theme .theme-btn {
+    background: var(--nasa-bg-secondary);
+    border-color: var(--nasa-border);
+    font-weight: bold;
+}
+
+body.nasa-theme .theme-btn.active {
+    background: var(--nasa-standby);
+    border-color: var(--nasa-standby);
+}
+
+/* ============================================
+   Scrollbars - NASA Style
+   ============================================ */
+
+body.nasa-theme ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+body.nasa-theme ::-webkit-scrollbar-track {
+    background: var(--nasa-bg-input);
+    border: 1px solid var(--nasa-border);
+}
+
+body.nasa-theme ::-webkit-scrollbar-thumb {
+    background: var(--nasa-border-light);
+    border-radius: 2px;
+}
+
+body.nasa-theme ::-webkit-scrollbar-thumb:hover {
+    background: var(--nasa-standby);
+}
+
+/* ============================================
+   Accessibility Enhancements
+   ============================================ */
+
+/* Focus indicators for keyboard navigation */
+body.nasa-theme *:focus {
+    outline: 3px solid var(--nasa-standby);
+    outline-offset: 2px;
+}
+
+body.nasa-theme button:focus,
+body.nasa-theme .btn:focus,
+body.nasa-theme .command-btn:focus {
+    outline: 3px solid var(--nasa-caution);
+}
+
+/* Skip to main content link (screen reader) */
+body.nasa-theme .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--nasa-standby);
+    color: white;
+    padding: 8px;
+    z-index: 10000;
+}
+
+body.nasa-theme .skip-link:focus {
+    top: 0;
+}
+
+
+
+
+
+
+
+
+
+

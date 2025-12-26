@@ -1,0 +1,14 @@
+apiVersion: 1
+
+providers:
+  - name: 'AOCS SCOE Dashboards'
+    orgId: 1
+    folder: 'AOCS SCOE'
+    folderUid: 'aocs-scoe'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+

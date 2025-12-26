@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora SOCC - Operations Console</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/nasa-theme.css">
+    <script src="/static/js/theme-switcher.js" defer></script>
+</head>
+<body>
+    <div class="starfield"></div>
+    <div class="grid-overlay"></div>
+    
+    <div class="container" style="max-width: 100%; padding: 0;">
+        <!-- Header -->
+        <header class="socc-header">
+            <div style="display: flex; align-items: center; gap: 30px;">
+                <h1 class="socc-title">AURORA SOCC</h1>
+                <div style="font-family: 'Share Tech Mono', monospace; color: var(--accent-amber);">
+                    <span id="activeScenario">LEO NOMINAL OPERATIONS</span>
+                </div>
+            </div>
+            <div class="socc-status">
+                <div class="status-item">
+                    <span class="status-label">MET:</span>
+                    <span class="status-value" id="missionTime">00:00:00</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">UTC:</span>
+                    <span class="status-value" id="utcTime">--:--:--</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">MODE:</span>
+                    <span class="status-value" id="satMode">NOMINAL</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" id="linkStatus"></span>
+                    <span class="status-value">LINK ACTIVE</span>
+                </div>
+                <div class="status-item" style="border-left: 1px solid var(--border-color); padding-left: 15px; margin-left: 5px;">
+                    <span class="status-label">TLM SRC:</span>
+                    <span class="status-value" id="tlmSource" style="color: var(--accent-cyan);">SIM</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" id="ccsdsStatus" style="background: var(--text-muted);"></span>
+                    <span class="status-value" id="ccsdsLabel">CCSDS OFF</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Console -->
+        <main class="socc-main" style="padding: 0 20px;">
+            <!-- Left Panel - Commands -->
+            <div class="command-panel">
+                <div class="command-section">
+                    <h3 class="section-title">Mode Commands</h3>
+                    <button class="command-btn" onclick="sendCommand('SET_NOMINAL')">
+                        <span class="icon">◉</span> Set Nominal Mode
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('SET_SAFE')">
+                        <span class="icon">⚠</span> Set Safe Mode
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('SET_DETUMBLE')">
+                        <span class="icon">↻</span> Initiate Detumble
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('SET_SUN_POINT')">
+                        <span class="icon">☀</span> Sun Pointing Mode
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('SET_NADIR')">
+                        <span class="icon">⊕</span> Nadir Pointing Mode
+                    </button>
+                </div>
+                
+                <div class="command-section">
+                    <h3 class="section-title">Maneuver Commands</h3>
+                    <button class="command-btn" onclick="sendCommand('SLEW_X_POS')">
+                        <span class="icon">→</span> Slew +X 10°
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('SLEW_X_NEG')">
+                        <span class="icon">←</span> Slew -X 10°
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('SLEW_Y_POS')">
+                        <span class="icon">↑</span> Slew +Y 10°
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('SLEW_Y_NEG')">
+                        <span class="icon">↓</span> Slew -Y 10°
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('SLEW_Z_POS')">
+                        <span class="icon">↷</span> Slew +Z 10°
+                    </button>
+                </div>
+                
+                <div class="command-section">
+                    <h3 class="section-title">Actuator Commands</h3>
+                    <button class="command-btn" onclick="sendCommand('RW_ENABLE')">
+                        <span class="icon">●</span> Enable Reaction Wheels
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('RW_DISABLE')">
+                        <span class="icon">○</span> Disable Reaction Wheels
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('MTQ_ENABLE')">
+                        <span class="icon">⊕</span> Enable Torque Rods
+                    </button>
+                    <button class="command-btn" onclick="sendCommand('RW_MOMENTUM_DUMP')">
+                        <span class="icon">⇋</span> Momentum Dump
+                    </button>
+                </div>
+                
+                <div class="command-section" style="background: rgba(0, 100, 150, 0.1); border: 1px solid var(--accent-cyan); border-radius: 4px; padding: 15px;">
+                    <h3 class="section-title" style="color: var(--accent-cyan);">📡 CCSDS Data Source</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button class="command-btn" id="ccsdsStartBtn" onclick="toggleCCSDS(true)" style="flex: 1;">
+                            <span class="icon">▶</span> Start CCSDS
+                        </button>
+                        <button class="command-btn" id="ccsdsStopBtn" onclick="toggleCCSDS(false)" style="flex: 1; opacity: 0.5;">
+                            <span class="icon">■</span> Stop CCSDS
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="command-btn" id="srcSimBtn" onclick="setTelemetrySource('simulation')" style="flex: 1; background: rgba(0, 212, 255, 0.2);">
+                            <span class="icon">◈</span> Use Simulation
+                        </button>
+                        <button class="command-btn" id="srcCcsdsBtn" onclick="setTelemetrySource('ccsds')" style="flex: 1;">
+                            <span class="icon">📡</span> Use CCSDS
+                        </button>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">
+                        <div>UDP Port: <span style="color: var(--accent-cyan);">5003</span></div>
+                        <div>Packets/sec: <span id="ccsdsRate" style="color: var(--accent-cyan);">0.0</span></div>
+                        <div>Total received: <span id="ccsdsTotalPkts" style="color: var(--accent-cyan);">0</span></div>
+                    </div>
+                </div>
+                
+                <div class="command-list">
+                    <h3 class="section-title">Command History</h3>
+                    <div class="event-log" id="commandLog">
+                        <div class="log-entry">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-message">Awaiting commands...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center Panel - Visualization -->
+            <div class="visualization-panel">
+                <div class="viz-header">
+                    <div class="viz-tabs">
+                        <button class="viz-tab active" onclick="switchTab('attitude')">Attitude</button>
+                        <button class="viz-tab" onclick="switchTab('orbit')">Orbit</button>
+                        <button class="viz-tab" onclick="switchTab('power')">Power</button>
+                        <button class="viz-tab" onclick="switchTab('thermal')">Thermal</button>
+                    </div>
+                    <div style="font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">
+                        SIM TIME: <span id="simTime" style="color: var(--accent-cyan);">0.0s</span>
+                    </div>
+                </div>
+                
+                <div class="viz-content" id="vizContent">
+                    <!-- Attitude Display -->
+                    <div id="attitudeView">
+                        <div class="attitude-display">
+                            <div class="attitude-axis">
+                                <div class="axis-label">ROLL (X)</div>
+                                <div class="axis-value"><span id="rollValue">0.00</span><span class="axis-unit">°</span></div>
+                                <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 5px;">
+                                    Rate: <span id="rollRate">0.000</span>°/s
+                                </div>
+                            </div>
+                            <div class="attitude-axis">
+                                <div class="axis-label">PITCH (Y)</div>
+                                <div class="axis-value"><span id="pitchValue">0.00</span><span class="axis-unit">°</span></div>
+                                <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 5px;">
+                                    Rate: <span id="pitchRate">0.000</span>°/s
+                                </div>
+                            </div>
+                            <div class="attitude-axis">
+                                <div class="axis-label">YAW (Z)</div>
+                                <div class="axis-value"><span id="yawValue">0.00</span><span class="axis-unit">°</span></div>
+                                <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 5px;">
+                                    Rate: <span id="yawRate">0.000</span>°/s
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Attitude Visualization Canvas -->
+                        <div style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 300px;">
+                            <canvas id="attitudeCanvas" width="400" height="300" style="border: 1px solid var(--border-color); border-radius: 4px; background: rgba(0,10,20,0.5);"></canvas>
+                        </div>
+                        
+                        <!-- Quaternion Display -->
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px;">
+                            <div style="text-align: center; padding: 10px; background: rgba(0,20,40,0.4); border-radius: 4px;">
+                                <div style="color: var(--text-muted); font-size: 0.7rem;">Q0 (w)</div>
+                                <div style="font-family: 'Share Tech Mono', monospace; color: var(--accent-cyan);" id="q0">1.0000</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px; background: rgba(0,20,40,0.4); border-radius: 4px;">
+                                <div style="color: var(--text-muted); font-size: 0.7rem;">Q1 (x)</div>
+                                <div style="font-family: 'Share Tech Mono', monospace; color: var(--accent-cyan);" id="q1">0.0000</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px; background: rgba(0,20,40,0.4); border-radius: 4px;">
+                                <div style="color: var(--text-muted); font-size: 0.7rem;">Q2 (y)</div>
+                                <div style="font-family: 'Share Tech Mono', monospace; color: var(--accent-cyan);" id="q2">0.0000</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px; background: rgba(0,20,40,0.4); border-radius: 4px;">
+                                <div style="color: var(--text-muted); font-size: 0.7rem;">Q3 (z)</div>
+                                <div style="font-family: 'Share Tech Mono', monospace; color: var(--accent-cyan);" id="q3">0.0000</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Telemetry -->
+            <div class="telemetry-panel">
+                <div class="telemetry-header">
+                    <span class="telemetry-title">LIVE TELEMETRY</span>
+                    <span style="font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: var(--text-muted);">
+                        <span id="tlmRate">1</span> Hz
+                    </span>
+                </div>
+                
+                <div class="telemetry-content">
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">GNC Status</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Attitude Mode</span>
+                            <span class="telemetry-value nominal" id="tlmAttMode">NADIR_POINTING</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Pointing Error</span>
+                            <span class="telemetry-value" id="tlmPointErr">0.05°</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Sun Angle</span>
+                            <span class="telemetry-value" id="tlmSunAngle">45.2°</span>
+                        </div>
+                    </div>
+                    
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Reaction Wheels</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">RW-1 Speed</span>
+                            <span class="telemetry-value" id="tlmRw1">0 RPM</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">RW-2 Speed</span>
+                            <span class="telemetry-value" id="tlmRw2">0 RPM</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">RW-3 Speed</span>
+                            <span class="telemetry-value" id="tlmRw3">0 RPM</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">RW-4 Speed</span>
+                            <span class="telemetry-value" id="tlmRw4">1000 RPM</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Total Momentum</span>
+                            <span class="telemetry-value" id="tlmMomentum">0.05 Nms</span>
+                        </div>
+                    </div>
+                    
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Sensors</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Magnetometer</span>
+                            <span class="telemetry-value nominal" id="tlmMag">NOMINAL</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Rate Sensor</span>
+                            <span class="telemetry-value nominal" id="tlmArs">NOMINAL</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Sun Sensors</span>
+                            <span class="telemetry-value nominal" id="tlmSs">4/6 ILLUMINATED</span>
+                        </div>
+                    </div>
+                    
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Power</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Bus Voltage</span>
+                            <span class="telemetry-value nominal" id="tlmVbus">28.2 V</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Current Draw</span>
+                            <span class="telemetry-value" id="tlmCurrent">1.2 A</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Battery SoC</span>
+                            <span class="telemetry-value nominal" id="tlmBattery">92%</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Eclipse</span>
+                            <span class="telemetry-value" id="tlmEclipse">NO</span>
+                        </div>
+                    </div>
+                    
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Orbit</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Altitude</span>
+                            <span class="telemetry-value" id="tlmAlt">400.2 km</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Latitude</span>
+                            <span class="telemetry-value" id="tlmLat">23.5° N</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Longitude</span>
+                            <span class="telemetry-value" id="tlmLon">45.2° E</span>
+                        </div>
+                    </div>
+                    
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Event Log</div>
+                        <div class="event-log" id="eventLog">
+                            <div class="log-entry">
+                                <span class="log-time">00:00:00</span>
+                                <span class="log-message info">SOCC session started</span>
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">00:00:00</span>
+                                <span class="log-message success">Scenario loaded: LEO Nominal</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Test Procedure Panel (collapsible) -->
+        <div class="test-procedure-panel" style="margin: 20px;">
+            <div class="procedure-header">
+                <h3 class="panel-title">Active Test Procedure</h3>
+                <div style="display: flex; gap: 10px;">
+                    <select id="procedureSelect" style="padding: 8px 15px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); font-family: 'Rajdhani', sans-serif;">
+                        <option value="nominal_checkout">TP-001: Nominal Mode Checkout</option>
+                        <option value="slew_test">TP-002: Slew Maneuver Test</option>
+                        <option value="safe_mode">TP-003: Safe Mode Entry/Exit</option>
+                        <option value="momentum_dump">TP-004: Momentum Dump</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="startProcedure()">Start</button>
+                    <button class="btn btn-primary" onclick="nextStep()">Next Step</button>
+                </div>
+            </div>
+            
+            <div class="procedure-steps" id="procedureSteps">
+                <div class="procedure-step completed">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Verify Initial State</div>
+                        <div class="step-description">Confirm satellite is in STANDBY mode with all sensors reporting nominal</div>
+                    </div>
+                    <div class="step-status pass">PASS</div>
+                </div>
+                <div class="procedure-step active">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Command Nominal Mode</div>
+                        <div class="step-description">Send SET_NOMINAL command and verify mode transition</div>
+                    </div>
+                    <div class="step-status running">RUNNING</div>
+                </div>
+                <div class="procedure-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Verify Attitude Control Active</div>
+                        <div class="step-description">Confirm reaction wheels enabled and attitude converging</div>
+                    </div>
+                    <div class="step-status pending">PENDING</div>
+                </div>
+                <div class="procedure-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Check Telemetry Rates</div>
+                        <div class="step-description">Verify all telemetry points updating at expected rates</div>
+                    </div>
+                    <div class="step-status pending">PENDING</div>
+                </div>
+                <div class="procedure-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-title">Document Results</div>
+                        <div class="step-description">Record test completion and any anomalies observed</div>
+                    </div>
+                    <div class="step-status pending">PENDING</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer controls -->
+        <div style="padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 15px;">
+                <button class="btn btn-secondary" onclick="window.location.href='/'">← Back to Scenarios</button>
+                <button class="btn btn-secondary" onclick="window.location.href='/constellation'">🌐 Constellation</button>
+                <button class="btn btn-danger" onclick="emergencyStop()">⬛ EMERGENCY STOP</button>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn btn-secondary" onclick="toggleRecording()" id="recordBtn">● Start Recording</button>
+                <button class="btn btn-secondary" onclick="exportData()">↓ Export Data</button>
+                <button class="btn btn-success" onclick="generateReport()">📄 Generate Report</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Mission time tracking
+        let missionStartTime = Date.now();
+        let simTime = 0;
+        let isRecording = false;
+        let commandHistory = [];
+        let eventHistory = [];
+        let ccsdsRunning = false;
+        let telemetrySource = 'simulation';
+        
+        // Update clocks
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('utcTime').textContent = now.toISOString().substr(11, 8);
+            
+            const met = Math.floor((Date.now() - missionStartTime) / 1000);
+            const hours = String(Math.floor(met / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((met % 3600) / 60)).padStart(2, '0');
+            const secs = String(met % 60).padStart(2, '0');
+            document.getElementById('missionTime').textContent = `${hours}:${mins}:${secs}`;
+            
+            simTime += 0.1;
+            document.getElementById('simTime').textContent = simTime.toFixed(1) + 's';
+        }, 100);
+        
+        // Simulate telemetry updates
+        setInterval(() => {
+            updateTelemetry();
+            updateAttitudeDisplay();
+        }, 1000);
+        
+        function updateTelemetry() {
+            // Simulate changing values
+            const baseRoll = parseFloat(document.getElementById('rollValue').textContent) || 0;
+            const basePitch = parseFloat(document.getElementById('pitchValue').textContent) || 0;
+            const baseYaw = parseFloat(document.getElementById('yawValue').textContent) || 0;
+            
+            // Small random variations
+            document.getElementById('rollValue').textContent = (baseRoll + (Math.random() - 0.5) * 0.1).toFixed(2);
+            document.getElementById('pitchValue').textContent = (basePitch + (Math.random() - 0.5) * 0.1).toFixed(2);
+            document.getElementById('yawValue').textContent = (baseYaw + (Math.random() - 0.5) * 0.1).toFixed(2);
+            
+            document.getElementById('rollRate').textContent = ((Math.random() - 0.5) * 0.01).toFixed(4);
+            document.getElementById('pitchRate').textContent = ((Math.random() - 0.5) * 0.01).toFixed(4);
+            document.getElementById('yawRate').textContent = ((Math.random() - 0.5) * 0.01).toFixed(4);
+            
+            // Update telemetry values
+            document.getElementById('tlmPointErr').textContent = (0.05 + Math.random() * 0.02).toFixed(3) + '°';
+            document.getElementById('tlmSunAngle').textContent = (45 + Math.random() * 2).toFixed(1) + '°';
+            document.getElementById('tlmMomentum').textContent = (0.05 + Math.random() * 0.01).toFixed(3) + ' Nms';
+            document.getElementById('tlmVbus').textContent = (28.0 + Math.random() * 0.4).toFixed(1) + ' V';
+            document.getElementById('tlmCurrent').textContent = (1.2 + Math.random() * 0.2).toFixed(2) + ' A';
+            document.getElementById('tlmAlt').textContent = (400 + Math.random() * 0.5).toFixed(1) + ' km';
+        }
+        
+        function updateAttitudeDisplay() {
+            const canvas = document.getElementById('attitudeCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.fillStyle = 'rgba(0, 10, 20, 0.9)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw attitude indicator
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 100;
+            
+            // Get current angles
+            const roll = parseFloat(document.getElementById('rollValue').textContent) || 0;
+            const pitch = parseFloat(document.getElementById('pitchValue').textContent) || 0;
+            
+            // Draw horizon
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(roll * Math.PI / 180);
+            
+            // Sky
+            ctx.fillStyle = '#1a3a5c';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, Math.PI, 0);
+            ctx.fill();
+            
+            // Ground
+            ctx.fillStyle = '#2a1a0a';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI);
+            ctx.fill();
+            
+            // Horizon line
+            ctx.strokeStyle = '#00d4ff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-radius, 0);
+            ctx.lineTo(radius, 0);
+            ctx.stroke();
+            
+            // Pitch lines
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.5)';
+            ctx.lineWidth = 1;
+            for (let i = -2; i <= 2; i++) {
+                if (i !== 0) {
+                    const y = i * 20;
+                    ctx.beginPath();
+                    ctx.moveTo(-30, y);
+                    ctx.lineTo(30, y);
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.restore();
+            
+            // Draw fixed aircraft symbol
+            ctx.strokeStyle = '#ffaa00';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX - 40, centerY);
+            ctx.lineTo(centerX - 15, centerY);
+            ctx.moveTo(centerX + 15, centerY);
+            ctx.lineTo(centerX + 40, centerY);
+            ctx.moveTo(centerX, centerY - 5);
+            ctx.lineTo(centerX, centerY + 10);
+            ctx.stroke();
+            
+            // Draw outer ring
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius + 10, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Draw compass points
+            ctx.fillStyle = '#00d4ff';
+            ctx.font = '12px "Share Tech Mono"';
+            ctx.textAlign = 'center';
+            ctx.fillText('N', centerX, centerY - radius - 20);
+            ctx.fillText('S', centerX, centerY + radius + 30);
+            ctx.fillText('E', centerX + radius + 25, centerY + 5);
+            ctx.fillText('W', centerX - radius - 25, centerY + 5);
+        }
+        
+        function sendCommand(cmd) {
+            const timestamp = new Date().toISOString().substr(11, 8);
+            
+            // Add to command log
+            const logDiv = document.getElementById('commandLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">${timestamp}</span>
+                <span class="log-message info">${cmd}</span>
+            `;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+            
+            // Add to event log
+            addEvent(`Command sent: ${cmd}`, 'info');
+            
+            // Store in history
+            commandHistory.push({ timestamp, command: cmd });
+            
+            // Simulate command effects
+            simulateCommandEffect(cmd);
+            
+            // Send to backend
+            fetch('/api/command', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command: cmd, timestamp })
+            }).catch(() => {});
+        }
+        
+        function simulateCommandEffect(cmd) {
+            switch(cmd) {
+                case 'SET_NOMINAL':
+                    document.getElementById('satMode').textContent = 'NOMINAL';
+                    document.getElementById('tlmAttMode').textContent = 'NADIR_POINTING';
+                    addEvent('Mode transition: NOMINAL', 'success');
+                    break;
+                case 'SET_SAFE':
+                    document.getElementById('satMode').textContent = 'SAFE';
+                    document.getElementById('satMode').className = 'status-value warning';
+                    document.getElementById('tlmAttMode').textContent = 'SUN_SAFE';
+                    addEvent('Mode transition: SAFE', 'warning');
+                    break;
+                case 'SET_DETUMBLE':
+                    document.getElementById('satMode').textContent = 'DETUMBLE';
+                    document.getElementById('tlmAttMode').textContent = 'B_DOT';
+                    addEvent('Detumble mode initiated', 'info');
+                    break;
+            }
+        }
+        
+        function addEvent(message, type = 'info') {
+            const timestamp = new Date().toISOString().substr(11, 8);
+            const logDiv = document.getElementById('eventLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">${timestamp}</span>
+                <span class="log-message ${type}">${message}</span>
+            `;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+            
+            eventHistory.push({ timestamp, message, type });
+            
+            // Keep log bounded
+            while (logDiv.children.length > 50) {
+                logDiv.removeChild(logDiv.lastChild);
+            }
+        }
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.viz-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            // Tab switching logic would go here
+        }
+        
+        function emergencyStop() {
+            if (confirm('CONFIRM EMERGENCY STOP?\n\nThis will halt all satellite operations.')) {
+                sendCommand('EMERGENCY_STOP');
+                document.getElementById('satMode').textContent = 'E-STOP';
+                document.getElementById('satMode').className = 'status-value error';
+                addEvent('EMERGENCY STOP ACTIVATED', 'error');
+            }
+        }
+        
+        function toggleRecording() {
+            isRecording = !isRecording;
+            const btn = document.getElementById('recordBtn');
+            if (isRecording) {
+                btn.textContent = '■ Stop Recording';
+                btn.style.color = 'var(--accent-red)';
+                addEvent('Data recording started', 'info');
+            } else {
+                btn.textContent = '● Start Recording';
+                btn.style.color = '';
+                addEvent('Data recording stopped', 'info');
+            }
+        }
+        
+        function exportData() {
+            const data = {
+                commandHistory,
+                eventHistory,
+                exportTime: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `socc_session_${Date.now()}.json`;
+            a.click();
+            
+            addEvent('Session data exported', 'success');
+        }
+        
+        function generateReport() {
+            addEvent('Generating test report...', 'info');
+            // Report generation logic
+            setTimeout(() => {
+                addEvent('Test report generated successfully', 'success');
+            }, 2000);
+        }
+        
+        function startProcedure() {
+            addEvent('Test procedure started: ' + document.getElementById('procedureSelect').value, 'info');
+        }
+        
+        function nextStep() {
+            addEvent('Advancing to next procedure step', 'info');
+        }
+        
+        // CCSDS Control Functions
+        function toggleCCSDS(start) {
+            const endpoint = start ? '/api/ccsds/start' : '/api/ccsds/stop';
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    ccsdsRunning = start;
+                    updateCCSDSUI();
+                    addEvent(data.message, start ? 'success' : 'info');
+                } else {
+                    addEvent('CCSDS error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(err => {
+                addEvent('CCSDS communication error: ' + err, 'error');
+            });
+        }
+        
+        function setTelemetrySource(source) {
+            fetch('/api/telemetry/source', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source: source })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    telemetrySource = source;
+                    updateTelemetrySourceUI();
+                    addEvent('Telemetry source: ' + source.toUpperCase(), 'info');
+                } else {
+                    addEvent('Error setting telemetry source: ' + (data.error || 'Unknown'), 'error');
+                }
+            })
+            .catch(err => {
+                addEvent('Telemetry source error: ' + err, 'error');
+            });
+        }
+        
+        function updateCCSDSUI() {
+            const statusDot = document.getElementById('ccsdsStatus');
+            const statusLabel = document.getElementById('ccsdsLabel');
+            const startBtn = document.getElementById('ccsdsStartBtn');
+            const stopBtn = document.getElementById('ccsdsStopBtn');
+            
+            if (ccsdsRunning) {
+                statusDot.style.background = 'var(--accent-green)';
+                statusDot.style.boxShadow = '0 0 10px var(--accent-green)';
+                statusLabel.textContent = 'CCSDS ON';
+                statusLabel.style.color = 'var(--accent-green)';
+                startBtn.style.opacity = '0.5';
+                stopBtn.style.opacity = '1';
+            } else {
+                statusDot.style.background = 'var(--text-muted)';
+                statusDot.style.boxShadow = 'none';
+                statusLabel.textContent = 'CCSDS OFF';
+                statusLabel.style.color = 'var(--text-muted)';
+                startBtn.style.opacity = '1';
+                stopBtn.style.opacity = '0.5';
+            }
+        }
+        
+        function updateTelemetrySourceUI() {
+            const srcDisplay = document.getElementById('tlmSource');
+            const simBtn = document.getElementById('srcSimBtn');
+            const ccsdsBtn = document.getElementById('srcCcsdsBtn');
+            
+            if (telemetrySource === 'ccsds') {
+                srcDisplay.textContent = 'CCSDS';
+                srcDisplay.style.color = 'var(--accent-green)';
+                simBtn.style.background = 'transparent';
+                ccsdsBtn.style.background = 'rgba(0, 212, 255, 0.2)';
+            } else {
+                srcDisplay.textContent = 'SIM';
+                srcDisplay.style.color = 'var(--accent-cyan)';
+                simBtn.style.background = 'rgba(0, 212, 255, 0.2)';
+                ccsdsBtn.style.background = 'transparent';
+            }
+        }
+        
+        function fetchCCSDSStatus() {
+            fetch('/api/ccsds/status')
+            .then(response => response.json())
+            .then(data => {
+                ccsdsRunning = data.running;
+                updateCCSDSUI();
+                
+                // Update rate display
+                document.getElementById('ccsdsRate').textContent = 
+                    (data.packets_per_second || 0).toFixed(1);
+                
+                if (data.decoder_stats) {
+                    document.getElementById('ccsdsTotalPkts').textContent = 
+                        data.decoder_stats.packets_received || 0;
+                }
+                
+                // Update telemetry source
+                if (data.telemetry_source) {
+                    telemetrySource = data.telemetry_source;
+                    updateTelemetrySourceUI();
+                }
+            })
+            .catch(() => {});
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get scenario from URL if present
+            const params = new URLSearchParams(window.location.search);
+            const scenario = params.get('scenario');
+            if (scenario) {
+                document.getElementById('activeScenario').textContent = scenario.replace(/_/g, ' ').toUpperCase();
+            }
+            
+            updateAttitudeDisplay();
+            addEvent('Console initialized', 'success');
+            
+            // Fetch initial CCSDS status
+            fetchCCSDSStatus();
+            
+            // Periodically update CCSDS status
+            setInterval(fetchCCSDSStatus, 2000);
+            
+            // Fetch telemetry from server
+            setInterval(fetchTelemetryFromServer, 1000);
+        });
+        
+        // Fetch telemetry from server (supports both simulation and CCSDS)
+        function fetchTelemetryFromServer() {
+            fetch('/api/telemetry')
+            .then(response => response.json())
+            .then(data => {
+                // Update displays with server telemetry
+                if (data.attitude) {
+                    document.getElementById('rollValue').textContent = (data.attitude.roll * 57.2958).toFixed(2); // rad to deg
+                    document.getElementById('pitchValue').textContent = (data.attitude.pitch * 57.2958).toFixed(2);
+                    document.getElementById('yawValue').textContent = (data.attitude.yaw * 57.2958).toFixed(2);
+                    
+                    if (data.attitude.q0 !== undefined) {
+                        document.getElementById('q0').textContent = data.attitude.q0.toFixed(4);
+                        document.getElementById('q1').textContent = data.attitude.q1.toFixed(4);
+                        document.getElementById('q2').textContent = data.attitude.q2.toFixed(4);
+                        document.getElementById('q3').textContent = data.attitude.q3.toFixed(4);
+                    }
+                }
+                
+                if (data.rates) {
+                    document.getElementById('rollRate').textContent = data.rates.roll.toFixed(4);
+                    document.getElementById('pitchRate').textContent = data.rates.pitch.toFixed(4);
+                    document.getElementById('yawRate').textContent = data.rates.yaw.toFixed(4);
+                }
+                
+                if (data.reaction_wheels) {
+                    document.getElementById('tlmRw1').textContent = data.reaction_wheels.rw1 + ' RPM';
+                    document.getElementById('tlmRw2').textContent = data.reaction_wheels.rw2 + ' RPM';
+                    document.getElementById('tlmRw3').textContent = data.reaction_wheels.rw3 + ' RPM';
+                    document.getElementById('tlmRw4').textContent = data.reaction_wheels.rw4 + ' RPM';
+                }
+                
+                if (data.power) {
+                    document.getElementById('tlmVbus').textContent = data.power.bus_voltage.toFixed(1) + ' V';
+                    document.getElementById('tlmCurrent').textContent = data.power.current.toFixed(2) + ' A';
+                    document.getElementById('tlmBattery').textContent = Math.round(data.power.battery_soc) + '%';
+                    document.getElementById('tlmEclipse').textContent = data.power.eclipse ? 'YES' : 'NO';
+                }
+                
+                if (data.orbit) {
+                    document.getElementById('tlmAlt').textContent = data.orbit.altitude_km.toFixed(1) + ' km';
+                    const lat = data.orbit.latitude_deg;
+                    document.getElementById('tlmLat').textContent = Math.abs(lat).toFixed(1) + '° ' + (lat >= 0 ? 'N' : 'S');
+                    const lon = data.orbit.longitude_deg;
+                    document.getElementById('tlmLon').textContent = Math.abs(lon).toFixed(1) + '° ' + (lon >= 0 ? 'E' : 'W');
+                }
+                
+                if (data.sensors) {
+                    document.getElementById('tlmMag').textContent = data.sensors.magnetometer;
+                    document.getElementById('tlmArs').textContent = data.sensors.rate_sensor;
+                    document.getElementById('tlmSs').textContent = data.sensors.sun_sensors;
+                }
+                
+                // Update mode
+                if (data.mode) {
+                    document.getElementById('satMode').textContent = data.mode;
+                    document.getElementById('tlmAttMode').textContent = data.mode;
+                }
+                
+                // Update telemetry source indicator
+                if (data.telemetry_source) {
+                    telemetrySource = data.telemetry_source;
+                    updateTelemetrySourceUI();
+                }
+                
+                // Update CCSDS rate if active
+                if (data.ccsds_active && data.ccsds_rate !== undefined) {
+                    document.getElementById('ccsdsRate').textContent = data.ccsds_rate.toFixed(1);
+                }
+            })
+            .catch(() => {});
+        }
+    </script>
+</body>
+</html>
+

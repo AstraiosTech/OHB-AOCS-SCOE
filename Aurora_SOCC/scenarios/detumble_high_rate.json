@@ -1,0 +1,80 @@
+{
+    "scenario_id": "DETUMBLE_001",
+    "name": "High Rate Detumble",
+    "description": "Post-separation tumbling scenario - tests B-dot detumble algorithm",
+    "category": "Safe Mode",
+    "version": "1.0.0",
+    "created_by": "GNC Team",
+    "created_date": "2024-11-27",
+    "approved_by": "V&V Lead",
+    
+    "orbital_elements": {
+        "epoch": "2024-01-01T00:00:00Z",
+        "semi_major_axis_km": 6778.137,
+        "eccentricity": 0.0001,
+        "inclination_deg": 51.6,
+        "raan_deg": 45.0,
+        "argument_of_perigee_deg": 0.0,
+        "true_anomaly_deg": 0.0,
+        "orbital_period_min": 92.5
+    },
+    
+    "initial_attitude": {
+        "quaternion": [0.5, 0.5, 0.5, 0.5],
+        "angular_rates_deg_s": [5.0, -3.0, 4.0],
+        "attitude_mode": "DETUMBLE"
+    },
+    
+    "initial_state": {
+        "power_mode": "SAFE",
+        "thermal_state": "COLD",
+        "comms_state": "OFF"
+    },
+    
+    "environment": {
+        "sun_vector_body": [0.577, 0.577, 0.577],
+        "magnetic_field_nT": [25000.0, 5000.0, -40000.0],
+        "eclipse": false,
+        "solar_flux_W_m2": 1361.0
+    },
+    
+    "sensor_injection": {
+        "magnetometer": {
+            "enabled": true,
+            "noise_nT": 15.0,
+            "bias_nT": [5.0, -3.0, 2.0]
+        },
+        "sun_sensor": {
+            "enabled": true,
+            "noise_deg": 1.0,
+            "fov_deg": 60.0
+        },
+        "rate_sensor": {
+            "enabled": true,
+            "noise_deg_s": 0.01,
+            "bias_deg_hr": [0.5, -0.3, 0.4]
+        }
+    },
+    
+    "actuator_config": {
+        "reaction_wheels": {
+            "enabled": false,
+            "max_torque_Nm": 0.01,
+            "max_momentum_Nms": 0.5,
+            "initial_speed_rpm": [0, 0, 0, 0]
+        },
+        "torque_rods": {
+            "enabled": true,
+            "max_dipole_Am2": 1.0
+        }
+    },
+    
+    "success_criteria": {
+        "max_final_rate_deg_s": 0.5,
+        "max_time_to_detumble_min": 45,
+        "power_positive": true
+    },
+    
+    "test_notes": "Simulates worst-case post-separation tumble. Reaction wheels disabled - torque rods only."
+}
+

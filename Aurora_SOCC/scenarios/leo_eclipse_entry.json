@@ -1,0 +1,83 @@
+{
+    "scenario_id": "LEO_ECLIPSE_001",
+    "name": "LEO Eclipse Entry",
+    "description": "Satellite entering eclipse - tests power management and attitude transitions",
+    "category": "Transitions",
+    "version": "1.0.0",
+    "created_by": "GNC Team",
+    "created_date": "2024-11-27",
+    "approved_by": "V&V Lead",
+    
+    "orbital_elements": {
+        "epoch": "2024-01-01T00:00:00Z",
+        "semi_major_axis_km": 6778.137,
+        "eccentricity": 0.0001,
+        "inclination_deg": 51.6,
+        "raan_deg": 45.0,
+        "argument_of_perigee_deg": 0.0,
+        "true_anomaly_deg": 175.0,
+        "orbital_period_min": 92.5
+    },
+    
+    "initial_attitude": {
+        "quaternion": [0.0, 0.0, 0.0, 1.0],
+        "angular_rates_deg_s": [0.0, 0.0, 0.0],
+        "attitude_mode": "SUN_POINTING"
+    },
+    
+    "initial_state": {
+        "power_mode": "NOMINAL",
+        "thermal_state": "NOMINAL",
+        "comms_state": "STANDBY"
+    },
+    
+    "environment": {
+        "sun_vector_body": [0.1, 0.0, 0.995],
+        "magnetic_field_nT": [22000.0, 8000.0, -38000.0],
+        "eclipse": false,
+        "eclipse_entry_sec": 120,
+        "eclipse_duration_min": 35,
+        "solar_flux_W_m2": 1361.0
+    },
+    
+    "sensor_injection": {
+        "magnetometer": {
+            "enabled": true,
+            "noise_nT": 10.0,
+            "bias_nT": [5.0, -3.0, 2.0]
+        },
+        "sun_sensor": {
+            "enabled": true,
+            "noise_deg": 0.5,
+            "fov_deg": 60.0
+        },
+        "rate_sensor": {
+            "enabled": true,
+            "noise_deg_s": 0.001,
+            "bias_deg_hr": [0.1, -0.05, 0.08]
+        }
+    },
+    
+    "actuator_config": {
+        "reaction_wheels": {
+            "enabled": true,
+            "max_torque_Nm": 0.01,
+            "max_momentum_Nms": 0.5,
+            "initial_speed_rpm": [500, -500, 500, 1000]
+        },
+        "torque_rods": {
+            "enabled": true,
+            "max_dipole_Am2": 1.0
+        }
+    },
+    
+    "expected_behaviors": [
+        "Sun sensor should report loss of sun within 120 seconds",
+        "Attitude mode should transition to RATE_DAMP or MAG_ONLY",
+        "Power mode should transition to ECLIPSE_SAFE",
+        "Reaction wheel momentum should be managed via torque rods"
+    ],
+    
+    "test_notes": "Verify eclipse entry handling and safe mode transitions"
+}
+

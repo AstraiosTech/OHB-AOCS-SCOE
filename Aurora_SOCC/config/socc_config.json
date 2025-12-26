@@ -1,0 +1,61 @@
+{
+    "socc": {
+        "name": "Aurora SOCC",
+        "version": "1.0.0",
+        "port": 5050,
+        "debug": false
+    },
+    
+    "scoe": {
+        "host": "localhost",
+        "command_port": 5100,
+        "telemetry_port": 5101,
+        "simulation_mode": "REALTIME",
+        "auto_connect": true
+    },
+    
+    "egse": {
+        "flatsat_host": "localhost",
+        "flatsat_sensors_port": 5200,
+        "flatsat_telemetry_port": 5201,
+        "flatsat_commands_port": 5202,
+        "socc_telemetry_port": 5300,
+        "socc_commands_port": 5301
+    },
+    
+    "telemetry": {
+        "rate_hz": 1.0,
+        "buffer_size": 100000,
+        "auto_record": true
+    },
+    
+    "data_collection": {
+        "output_directory": "data_collection/output",
+        "auto_export": true,
+        "compress_raw_data": true,
+        "export_formats": ["json", "csv"]
+    },
+    
+    "test_procedures": {
+        "auto_advance": false,
+        "require_confirmation": true,
+        "generate_report": true
+    },
+    
+    "display": {
+        "theme": "dark",
+        "telemetry_update_rate_ms": 1000,
+        "max_log_entries": 500,
+        "attitude_display": "euler"
+    },
+    
+    "scenarios_directory": "scenarios",
+    
+    "logging": {
+        "level": "INFO",
+        "file": "logs/socc.log",
+        "max_size_mb": 50,
+        "backup_count": 5
+    }
+}
+

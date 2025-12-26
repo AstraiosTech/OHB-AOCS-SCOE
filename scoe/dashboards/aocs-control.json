@@ -1,0 +1,218 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Overview",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/aocs-overview"
+    }
+  ],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "panels": [],
+      "title": "🎮 SCOE Control Panel",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "Current simulation status",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "text": "⏹️ STOPPED" } }, "type": "value" },
+            { "options": { "1": { "color": "green", "text": "▶️ RUNNING" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: -1m)\n  |> filter(fn: (r) => r[\"parameter\"] == \"sim_running\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Simulation Status",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "decimals": 2,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: -1m)\n  |> filter(fn: (r) => r[\"parameter\"] == \"sim_time\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Simulation Time",
+      "type": "stat"
+    },
+    {
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 1 },
+      "id": 3,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false, "showMiniMap": false },
+        "content": "# 🛰️ AOCS SCOE Control Panel\n\n**Use the controls below to operate the AOCS simulation:**\n\n- **Simulation Controls**: Start, Stop, Reset the simulation\n- **Reaction Wheels**: Set torque commands for each wheel\n- **Thrusters**: Enable/disable thruster firing\n- **SADA**: Control solar array angles\n\n**API Endpoint**: `http://localhost:8085/api`",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.2.0",
+      "title": "Instructions",
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "panels": [],
+      "title": "Simulation Control",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 6 },
+      "id": 10,
+      "options": {
+        "code": { "language": "html", "showLineNumbers": false, "showMiniMap": false },
+        "content": "<div style=\"display: flex; gap: 20px; justify-content: center; align-items: center; padding: 20px;\">\n  <button onclick=\"fetch('http://localhost:8085/api/simulation/start', {method:'POST'}).then(r=>r.json()).then(d=>alert(d.success?'Simulation Started':'Failed'))\" \n          style=\"padding: 20px 40px; font-size: 18px; background: #2ecc71; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;\">\n    ▶️ START SIMULATION\n  </button>\n  <button onclick=\"fetch('http://localhost:8085/api/simulation/stop', {method:'POST'}).then(r=>r.json()).then(d=>alert(d.success?'Simulation Stopped':'Failed'))\" \n          style=\"padding: 20px 40px; font-size: 18px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;\">\n    ⏹️ STOP SIMULATION\n  </button>\n  <button onclick=\"fetch('http://localhost:8085/api/simulation/reset', {method:'POST'}).then(r=>r.json()).then(d=>alert(d.success?'Simulation Reset':'Failed'))\" \n          style=\"padding: 20px 40px; font-size: 18px; background: #f39c12; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;\">\n    🔄 RESET SIMULATION\n  </button>\n</div>",
+        "mode": "html"
+      },
+      "pluginVersion": "10.2.0",
+      "title": "Simulation Controls",
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "id": 102,
+      "panels": [],
+      "title": "⚙️ Reaction Wheel Control",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 13 },
+      "id": 20,
+      "options": {
+        "code": { "language": "html", "showLineNumbers": false, "showMiniMap": false },
+        "content": "<div style=\"display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px;\">\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #00d4ff; margin-bottom: 15px;\">RW 0</h3>\n    <input type=\"range\" id=\"rw0\" min=\"-0.2\" max=\"0.2\" step=\"0.01\" value=\"0\" \n           style=\"width: 100%;\" oninput=\"document.getElementById('rw0val').textContent=this.value+' Nm'\">\n    <p id=\"rw0val\" style=\"color: white; font-size: 16px; margin: 10px 0;\">0 Nm</p>\n    <button onclick=\"fetch('http://localhost:8085/api/rw/0/torque', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({torque:parseFloat(document.getElementById('rw0').value)})})\" \n            style=\"padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;\">\n      Apply Torque\n    </button>\n  </div>\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #00d4ff; margin-bottom: 15px;\">RW 1</h3>\n    <input type=\"range\" id=\"rw1\" min=\"-0.2\" max=\"0.2\" step=\"0.01\" value=\"0\" \n           style=\"width: 100%;\" oninput=\"document.getElementById('rw1val').textContent=this.value+' Nm'\">\n    <p id=\"rw1val\" style=\"color: white; font-size: 16px; margin: 10px 0;\">0 Nm</p>\n    <button onclick=\"fetch('http://localhost:8085/api/rw/1/torque', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({torque:parseFloat(document.getElementById('rw1').value)})})\" \n            style=\"padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;\">\n      Apply Torque\n    </button>\n  </div>\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #00d4ff; margin-bottom: 15px;\">RW 2</h3>\n    <input type=\"range\" id=\"rw2\" min=\"-0.2\" max=\"0.2\" step=\"0.01\" value=\"0\" \n           style=\"width: 100%;\" oninput=\"document.getElementById('rw2val').textContent=this.value+' Nm'\">\n    <p id=\"rw2val\" style=\"color: white; font-size: 16px; margin: 10px 0;\">0 Nm</p>\n    <button onclick=\"fetch('http://localhost:8085/api/rw/2/torque', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({torque:parseFloat(document.getElementById('rw2').value)})})\" \n            style=\"padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;\">\n      Apply Torque\n    </button>\n  </div>\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #00d4ff; margin-bottom: 15px;\">RW 3</h3>\n    <input type=\"range\" id=\"rw3\" min=\"-0.2\" max=\"0.2\" step=\"0.01\" value=\"0\" \n           style=\"width: 100%;\" oninput=\"document.getElementById('rw3val').textContent=this.value+' Nm'\">\n    <p id=\"rw3val\" style=\"color: white; font-size: 16px; margin: 10px 0;\">0 Nm</p>\n    <button onclick=\"fetch('http://localhost:8085/api/rw/3/torque', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({torque:parseFloat(document.getElementById('rw3').value)})})\" \n            style=\"padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;\">\n      Apply Torque\n    </button>\n  </div>\n</div>",
+        "mode": "html"
+      },
+      "pluginVersion": "10.2.0",
+      "title": "Reaction Wheel Torque Commands",
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 },
+      "id": 103,
+      "panels": [],
+      "title": "🔥 Thruster Control",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 22 },
+      "id": 30,
+      "options": {
+        "code": { "language": "html", "showLineNumbers": false, "showMiniMap": false },
+        "content": "<div style=\"display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px;\">\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #ff6b6b; margin-bottom: 15px;\">THR 0 (+X)</h3>\n    <button onclick=\"fetch('http://localhost:8085/api/thruster/0/fire', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({firing:true})})\" \n            style=\"padding: 15px 30px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px;\">\n      🔥 FIRE\n    </button>\n    <button onclick=\"fetch('http://localhost:8085/api/thruster/0/fire', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({firing:false})})\" \n            style=\"padding: 15px 30px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px;\">\n      ⏹️ STOP\n    </button>\n  </div>\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #ff6b6b; margin-bottom: 15px;\">THR 1 (-X)</h3>\n    <button onclick=\"fetch('http://localhost:8085/api/thruster/1/fire', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({firing:true})})\" \n            style=\"padding: 15px 30px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px;\">\n      🔥 FIRE\n    </button>\n    <button onclick=\"fetch('http://localhost:8085/api/thruster/1/fire', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({firing:false})})\" \n            style=\"padding: 15px 30px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px;\">\n      ⏹️ STOP\n    </button>\n  </div>\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #ff6b6b; margin-bottom: 15px;\">THR 2 (+Y)</h3>\n    <button onclick=\"fetch('http://localhost:8085/api/thruster/2/fire', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({firing:true})})\" \n            style=\"padding: 15px 30px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px;\">\n      🔥 FIRE\n    </button>\n    <button onclick=\"fetch('http://localhost:8085/api/thruster/2/fire', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({firing:false})})\" \n            style=\"padding: 15px 30px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px;\">\n      ⏹️ STOP\n    </button>\n  </div>\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #ff6b6b; margin-bottom: 15px;\">THR 3 (-Y)</h3>\n    <button onclick=\"fetch('http://localhost:8085/api/thruster/3/fire', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({firing:true})})\" \n            style=\"padding: 15px 30px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px;\">\n      🔥 FIRE\n    </button>\n    <button onclick=\"fetch('http://localhost:8085/api/thruster/3/fire', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({firing:false})})\" \n            style=\"padding: 15px 30px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px;\">\n      ⏹️ STOP\n    </button>\n  </div>\n</div>",
+        "mode": "html"
+      },
+      "pluginVersion": "10.2.0",
+      "title": "Thruster Fire Commands",
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 28 },
+      "id": 104,
+      "panels": [],
+      "title": "☀️ SADA Control",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 29 },
+      "id": 40,
+      "options": {
+        "code": { "language": "html", "showLineNumbers": false, "showMiniMap": false },
+        "content": "<div style=\"display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px;\">\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #f1c40f; margin-bottom: 15px;\">☀️ SADA 0</h3>\n    <input type=\"range\" id=\"sada0\" min=\"-180\" max=\"180\" step=\"1\" value=\"0\" \n           style=\"width: 80%;\" oninput=\"document.getElementById('sada0val').textContent=this.value+'°'\">\n    <p id=\"sada0val\" style=\"color: white; font-size: 20px; margin: 15px 0;\">0°</p>\n    <button onclick=\"fetch('http://localhost:8085/api/sada/0/angle', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({angle:parseFloat(document.getElementById('sada0').value)})})\" \n            style=\"padding: 12px 25px; background: #f39c12; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;\">\n      Set Angle\n    </button>\n  </div>\n  <div style=\"background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center;\">\n    <h3 style=\"color: #f1c40f; margin-bottom: 15px;\">☀️ SADA 1</h3>\n    <input type=\"range\" id=\"sada1\" min=\"-180\" max=\"180\" step=\"1\" value=\"0\" \n           style=\"width: 80%;\" oninput=\"document.getElementById('sada1val').textContent=this.value+'°'\">\n    <p id=\"sada1val\" style=\"color: white; font-size: 20px; margin: 15px 0;\">0°</p>\n    <button onclick=\"fetch('http://localhost:8085/api/sada/1/angle', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({angle:parseFloat(document.getElementById('sada1').value)})})\" \n            style=\"padding: 12px 25px; background: #f39c12; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;\">\n      Set Angle\n    </button>\n  </div>\n</div>",
+        "mode": "html"
+      },
+      "pluginVersion": "10.2.0",
+      "title": "Solar Array Drive Commands",
+      "type": "text"
+    }
+  ],
+  "refresh": "1s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["aocs", "scoe", "control"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "InfluxDB", "value": "InfluxDB" },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "DS_INFLUXDB",
+        "options": [],
+        "query": "influxdb",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-5m", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "AOCS SCOE Control",
+  "uid": "aocs-control",
+  "version": 1,
+  "weekStart": ""
+}
+

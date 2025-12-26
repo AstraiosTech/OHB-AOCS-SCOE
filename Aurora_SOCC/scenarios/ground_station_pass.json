@@ -1,0 +1,105 @@
+{
+    "scenario_id": "GS_PASS_001",
+    "name": "Ground Station Pass",
+    "description": "Simulates a ground station contact window with data downlink",
+    "category": "Communications",
+    "version": "1.0.0",
+    "created_by": "GNC Team",
+    "created_date": "2024-11-27",
+    "approved_by": "V&V Lead",
+    
+    "orbital_elements": {
+        "epoch": "2024-01-01T00:00:00Z",
+        "semi_major_axis_km": 6778.137,
+        "eccentricity": 0.0001,
+        "inclination_deg": 51.6,
+        "raan_deg": 45.0,
+        "argument_of_perigee_deg": 0.0,
+        "true_anomaly_deg": 270.0,
+        "orbital_period_min": 92.5
+    },
+    
+    "ground_station": {
+        "name": "Svalbard",
+        "latitude_deg": 78.23,
+        "longitude_deg": 15.39,
+        "altitude_m": 458,
+        "aos_time_sec": 0,
+        "los_time_sec": 600,
+        "max_elevation_deg": 45.0
+    },
+    
+    "initial_attitude": {
+        "quaternion": [0.0, 0.0, 0.0, 1.0],
+        "angular_rates_deg_s": [0.0, 0.0, 0.0],
+        "attitude_mode": "NADIR_POINTING"
+    },
+    
+    "initial_state": {
+        "power_mode": "NOMINAL",
+        "thermal_state": "NOMINAL",
+        "comms_state": "STANDBY"
+    },
+    
+    "environment": {
+        "sun_vector_body": [0.5, 0.5, 0.707],
+        "magnetic_field_nT": [15000.0, 2000.0, -45000.0],
+        "eclipse": false,
+        "solar_flux_W_m2": 1361.0
+    },
+    
+    "sensor_injection": {
+        "magnetometer": {
+            "enabled": true,
+            "noise_nT": 10.0,
+            "bias_nT": [5.0, -3.0, 2.0]
+        },
+        "sun_sensor": {
+            "enabled": true,
+            "noise_deg": 0.5,
+            "fov_deg": 60.0
+        },
+        "rate_sensor": {
+            "enabled": true,
+            "noise_deg_s": 0.001,
+            "bias_deg_hr": [0.1, -0.05, 0.08]
+        },
+        "gps": {
+            "enabled": true,
+            "position_noise_m": 10.0,
+            "velocity_noise_m_s": 0.1
+        }
+    },
+    
+    "actuator_config": {
+        "reaction_wheels": {
+            "enabled": true,
+            "max_torque_Nm": 0.01,
+            "max_momentum_Nms": 0.5,
+            "initial_speed_rpm": [0, 0, 0, 1500]
+        },
+        "torque_rods": {
+            "enabled": true,
+            "max_dipole_Am2": 1.0
+        }
+    },
+    
+    "pass_operations": [
+        {"time_sec": 0, "action": "AOS - Acquire signal"},
+        {"time_sec": 10, "action": "Uplink time sync"},
+        {"time_sec": 30, "action": "Request telemetry dump"},
+        {"time_sec": 60, "action": "Upload command sequence"},
+        {"time_sec": 300, "action": "Begin science data downlink"},
+        {"time_sec": 580, "action": "End data transfer"},
+        {"time_sec": 600, "action": "LOS - Loss of signal"}
+    ],
+    
+    "success_criteria": {
+        "antenna_pointing_error_deg": 2.0,
+        "data_transfer_success": true,
+        "command_acknowledge": true
+    },
+    
+    "test_notes": "Tests ground station tracking and comm operations"
+}
+

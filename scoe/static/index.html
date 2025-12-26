@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora AOCS SCOE - Mission Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #0f1520;
+            --bg-tertiary: #151d2e;
+            --bg-panel: rgba(15, 25, 45, 0.85);
+            --bg-card: #1a2234;
+            --accent-cyan: #00d4ff;
+            --accent-green: #00ff88;
+            --accent-amber: #ffaa00;
+            --accent-red: #ff3366;
+            --accent-purple: #aa44ff;
+            --accent-blue: #4488ff;
+            --text-primary: #e8f4ff;
+            --text-secondary: #8899aa;
+            --text-muted: #556677;
+            --border-color: rgba(0, 212, 255, 0.2);
+            --border-highlight: rgba(0, 212, 255, 0.5);
+            --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.5);
+            --glow-green: 0 0 20px rgba(0, 255, 136, 0.5);
+            --glow-amber: 0 0 20px rgba(255, 170, 0, 0.5);
+            --glow-red: 0 0 20px rgba(255, 51, 102, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated starfield background */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(ellipse at center, rgba(15, 25, 50, 1) 0%, rgba(10, 14, 23, 1) 100%);
+        }
+
+        .starfield::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.9), transparent),
+                radial-gradient(2px 2px at 160px 120px, rgba(0,212,255,0.7), transparent),
+                radial-gradient(1px 1px at 230px 80px, rgba(255,255,255,0.5), transparent),
+                radial-gradient(2px 2px at 300px 200px, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 400px 150px, rgba(0,255,136,0.6), transparent),
+                radial-gradient(2px 2px at 500px 100px, rgba(255,255,255,0.8), transparent);
+            background-size: 550px 550px;
+            animation: twinkle 8s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 100%;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-panel);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .logo-text h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.1em;
+        }
+
+        .logo-text span {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .active-scenario {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--accent-amber);
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--accent-amber);
+            border-radius: 4px;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected { background: var(--accent-green); box-shadow: var(--glow-green); }
+        .status-dot.disconnected { background: var(--accent-red); box-shadow: var(--glow-red); }
+        .status-dot.running { background: var(--accent-cyan); box-shadow: var(--glow-cyan); }
+        .status-dot.warning { background: var(--accent-amber); box-shadow: var(--glow-amber); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Layout - 3 columns */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 1rem;
+            padding: 1rem;
+            height: calc(100vh - 80px);
+            overflow: hidden;
+        }
+
+        /* Left Panel - Commands */
+        .command-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .command-section {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .command-btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .command-btn:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-cyan);
+        }
+
+        .command-btn.active {
+            background: rgba(0, 255, 136, 0.15);
+            border-color: var(--accent-green);
+        }
+
+        .command-btn .icon {
+            font-size: 1.2rem;
+        }
+
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .command-grid .command-btn {
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            justify-content: center;
+        }
+
+        /* Scenario selector */
+        .scenario-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+        }
+
+        .scenario-select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .inject-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            border: none;
+            border-radius: 4px;
+            color: var(--bg-primary);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .inject-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-cyan);
+        }
+
+        /* Center Panel - Visualization */
+        .visualization-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Simulation Control */
+        .sim-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .sim-btn {
+            padding: 1rem 2rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .sim-btn.start {
+            background: linear-gradient(135deg, var(--accent-green), #00cc66);
+            color: var(--bg-primary);
+        }
+
+        .sim-btn.stop {
+            background: linear-gradient(135deg, var(--accent-red), #cc2255);
+            color: white;
+        }
+
+        .sim-btn.reset {
+            background: linear-gradient(135deg, var(--accent-amber), #d97706);
+            color: var(--bg-primary);
+        }
+
+        .sim-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Attitude Display */
+        .attitude-viz {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .attitude-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .attitude-axis {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0, 20, 40, 0.5);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .axis-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .axis-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .axis-value.roll { color: var(--accent-red); }
+        .axis-value.pitch { color: var(--accent-green); }
+        .axis-value.yaw { color: var(--accent-blue); }
+
+        .axis-unit {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Canvas for attitude indicator */
+        .attitude-canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #attitudeCanvas {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(0, 10, 20, 0.5);
+        }
+
+        /* Quaternion display */
+        .quaternion-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .quat-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(0, 20, 40, 0.4);
+            border-radius: 4px;
+        }
+
+        .quat-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .quat-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+        }
+
+        /* Hardware Controls Grid */
+        .hardware-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        .hw-control {
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .hw-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .hw-name.rw { color: var(--accent-cyan); }
+        .hw-name.thr { color: var(--accent-amber); }
+        .hw-name.sada { color: var(--accent-purple); }
+
+        .hw-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .hw-gauge {
+            height: 4px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .hw-gauge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .hw-slider {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            outline: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .hw-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .hw-btn {
+            width: 100%;
+            padding: 0.4rem;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .hw-btn.primary {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
+        .hw-btn.fire {
+            background: var(--accent-amber);
+            color: var(--bg-primary);
+        }
+
+        .hw-btn.stop {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .thruster-btns {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .thruster-btns .hw-btn {
+            flex: 1;
+        }
+
+        .thruster-status {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .thruster-status.firing {
+            animation: fire-pulse 0.5s infinite;
+        }
+
+        @keyframes fire-pulse {
+            0%, 100% { text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+            50% { text-shadow: 0 0 30px rgba(245, 158, 11, 0.9); }
+        }
+
+        /* Right Panel - Telemetry */
+        .telemetry-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .telemetry-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .telemetry-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-green);
+            letter-spacing: 0.1em;
+        }
+
+        .telemetry-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .telemetry-group {
+            margin-bottom: 1rem;
+        }
+
+        .telemetry-group-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent-amber);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid rgba(255, 170, 0, 0.2);
+        }
+
+        .telemetry-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .telemetry-label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .telemetry-value {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
+        .telemetry-value.nominal { color: var(--accent-green); }
+        .telemetry-value.warning { color: var(--accent-amber); }
+        .telemetry-value.critical { color: var(--accent-red); }
+
+        /* Event Log */
+        .event-log {
+            background: rgba(0, 10, 20, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            margin-right: 0.5rem;
+        }
+
+        .log-message { color: var(--text-secondary); }
+        .log-message.info { color: var(--accent-cyan); }
+        .log-message.success { color: var(--accent-green); }
+        .log-message.warning { color: var(--accent-amber); }
+        .log-message.error { color: var(--accent-red); }
+
+        /* Test Procedure Panel */
+        .procedure-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 1rem;
+            padding: 1rem;
+        }
+
+        .procedure-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .procedure-select {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+        }
+
+        .procedure-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .procedure-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: transparent;
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .procedure-btn.primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            border: none;
+            color: var(--bg-primary);
+        }
+
+        .procedure-btn:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .procedure-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .procedure-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .procedure-step.completed .step-number {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: var(--bg-primary);
+        }
+
+        .procedure-step.active .step-number {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: var(--bg-primary);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .step-description {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .step-status {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .step-status.pending { background: rgba(85, 102, 119, 0.3); color: var(--text-muted); }
+        .step-status.running { background: rgba(0, 212, 255, 0.2); color: var(--accent-cyan); }
+        .step-status.pass { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); }
+        .step-status.fail { background: rgba(255, 51, 102, 0.2); color: var(--accent-red); }
+
+        /* Emergency Stop */
+        .emergency-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--accent-red), #cc2255);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        .emergency-btn:hover {
+            box-shadow: var(--glow-red);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-color: var(--accent-green); }
+        .toast.error { border-color: var(--accent-red); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-highlight);
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .main-layout {
+                grid-template-columns: 280px 1fr 300px;
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .command-panel, .telemetry-panel {
+                max-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="starfield"></div>
+    <div class="grid-overlay"></div>
+    
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🛰️</div>
+                <div class="logo-text">
+                    <h1>AURORA SCOE</h1>
+                    <span>AOCS V&V Testing Environment</span>
+                </div>
+            </div>
+            <div class="active-scenario" id="activeScenario">LEO NOMINAL OPERATIONS</div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-dot" id="connectionStatus"></span>
+                    <span id="connectionText">Connecting...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" id="simStatus"></span>
+                    <span id="simText">SIM: --</span>
+                </div>
+                <div class="status-item">
+                    <span>MODE:</span>
+                    <span id="modeStatus" style="color: var(--accent-green);">NOMINAL</span>
+                </div>
+                <div class="status-item">
+                    <span>MET:</span>
+                    <span id="simTime" style="color: var(--accent-cyan);">00:00:00</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-layout">
+            <!-- Left Panel - Commands -->
+            <div class="command-panel">
+                <!-- Scenario Selection -->
+                <div class="command-section">
+                    <div class="section-title">📋 Initial Conditions</div>
+                    <select class="scenario-select" id="scenarioSelect" onchange="selectScenario()">
+                        <option value="LEO_NOMINAL">LEO Nominal Operations</option>
+                        <option value="DETUMBLE">High Rate Detumble</option>
+                        <option value="SAFE_MODE">Safe Mode Recovery</option>
+                        <option value="ECLIPSE">Eclipse Entry</option>
+                        <option value="SLEW_LARGE">Large Angle Slew</option>
+                        <option value="GS_PASS">Ground Station Pass</option>
+                    </select>
+                    <button class="inject-btn" onclick="injectScenario()">
+                        ▶ INJECT SCENARIO
+                    </button>
+                </div>
+
+                <!-- Mode Commands -->
+                <div class="command-section">
+                    <div class="section-title">🎯 Mode Commands</div>
+                    <button class="command-btn" id="btnNominal" onclick="sendModeCommand('SET_NOMINAL')">
+                        <span class="icon">◉</span> Set Nominal Mode
+                    </button>
+                    <button class="command-btn" onclick="sendModeCommand('SET_SAFE')">
+                        <span class="icon">⚠️</span> Set Safe Mode
+                    </button>
+                    <button class="command-btn" onclick="sendModeCommand('SET_DETUMBLE')">
+                        <span class="icon">↻</span> Initiate Detumble
+                    </button>
+                    <button class="command-btn" onclick="sendModeCommand('SET_SUN_POINT')">
+                        <span class="icon">☀️</span> Sun Pointing Mode
+                    </button>
+                    <button class="command-btn" onclick="sendModeCommand('SET_NADIR')">
+                        <span class="icon">⊕</span> Nadir Pointing Mode
+                    </button>
+                </div>
+
+                <!-- Maneuver Commands -->
+                <div class="command-section">
+                    <div class="section-title">🔄 Slew Maneuvers</div>
+                    <div class="command-grid">
+                        <button class="command-btn" onclick="sendSlewCommand('X', 10)">
+                            <span>→</span> +X 10°
+                        </button>
+                        <button class="command-btn" onclick="sendSlewCommand('X', -10)">
+                            <span>←</span> -X 10°
+                        </button>
+                        <button class="command-btn" onclick="sendSlewCommand('Y', 10)">
+                            <span>↑</span> +Y 10°
+                        </button>
+                        <button class="command-btn" onclick="sendSlewCommand('Y', -10)">
+                            <span>↓</span> -Y 10°
+                        </button>
+                        <button class="command-btn" onclick="sendSlewCommand('Z', 10)">
+                            <span>↷</span> +Z 10°
+                        </button>
+                        <button class="command-btn" onclick="sendSlewCommand('Z', -10)">
+                            <span>↶</span> -Z 10°
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Actuator Commands -->
+                <div class="command-section">
+                    <div class="section-title">⚙️ Actuators</div>
+                    <button class="command-btn" onclick="sendActuatorCommand('RW_ENABLE')">
+                        <span class="icon">●</span> Enable Reaction Wheels
+                    </button>
+                    <button class="command-btn" onclick="sendActuatorCommand('RW_DISABLE')">
+                        <span class="icon">○</span> Disable Reaction Wheels
+                    </button>
+                    <button class="command-btn" onclick="sendActuatorCommand('MTQ_ENABLE')">
+                        <span class="icon">⊕</span> Enable Torque Rods
+                    </button>
+                    <button class="command-btn" onclick="sendActuatorCommand('RW_MOMENTUM_DUMP')">
+                        <span class="icon">⇋</span> Momentum Dump
+                    </button>
+                </div>
+
+                <!-- Emergency Stop -->
+                <div class="command-section">
+                    <button class="emergency-btn" onclick="emergencyStop()">
+                        ⬛ EMERGENCY STOP
+                    </button>
+                </div>
+            </div>
+
+            <!-- Center Panel - Visualization -->
+            <div class="visualization-panel">
+                <!-- Simulation Control -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>🎮</span> Simulation Control
+                        </div>
+                    </div>
+                    <div class="sim-controls">
+                        <button class="sim-btn start" onclick="startSimulation()">
+                            <span>▶️</span> START
+                        </button>
+                        <button class="sim-btn stop" onclick="stopSimulation()">
+                            <span>⏹️</span> STOP
+                        </button>
+                        <button class="sim-btn reset" onclick="resetSimulation()">
+                            <span>🔄</span> RESET
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Attitude Visualization -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>🎯</span> Attitude & Rates
+                        </div>
+                        <span style="font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: var(--text-muted);">
+                            SIM TIME: <span id="simTimeViz" style="color: var(--accent-cyan);">0.0s</span>
+                        </span>
+                    </div>
+                    <div class="attitude-viz">
+                        <div>
+                            <div class="attitude-display">
+                                <div class="attitude-axis">
+                                    <div class="axis-label">Roll (X)</div>
+                                    <div class="axis-value roll" id="rollValue">0.00</div>
+                                    <div class="axis-unit">deg/s</div>
+                                </div>
+                                <div class="attitude-axis">
+                                    <div class="axis-label">Pitch (Y)</div>
+                                    <div class="axis-value pitch" id="pitchValue">0.00</div>
+                                    <div class="axis-unit">deg/s</div>
+                                </div>
+                                <div class="attitude-axis">
+                                    <div class="axis-label">Yaw (Z)</div>
+                                    <div class="axis-value yaw" id="yawValue">0.00</div>
+                                    <div class="axis-unit">deg/s</div>
+                                </div>
+                            </div>
+                            <div class="quaternion-grid">
+                                <div class="quat-item">
+                                    <div class="quat-label">Q0 (w)</div>
+                                    <div class="quat-value" id="q0">1.0000</div>
+                                </div>
+                                <div class="quat-item">
+                                    <div class="quat-label">Q1 (x)</div>
+                                    <div class="quat-value" id="q1">0.0000</div>
+                                </div>
+                                <div class="quat-item">
+                                    <div class="quat-label">Q2 (y)</div>
+                                    <div class="quat-value" id="q2">0.0000</div>
+                                </div>
+                                <div class="quat-item">
+                                    <div class="quat-label">Q3 (z)</div>
+                                    <div class="quat-value" id="q3">0.0000</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="attitude-canvas-container">
+                            <canvas id="attitudeCanvas" width="300" height="220"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hardware Controls -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>⚙️</span> Reaction Wheels
+                        </div>
+                    </div>
+                    <div class="hardware-grid" id="rwGrid"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>🔥</span> Thrusters
+                        </div>
+                    </div>
+                    <div class="hardware-grid" id="thrusterGrid"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>☀️</span> Solar Array Drive
+                        </div>
+                    </div>
+                    <div class="hardware-grid" id="sadaGrid"></div>
+                </div>
+
+                <!-- Test Procedure Panel -->
+                <div class="procedure-panel">
+                    <div class="procedure-header">
+                        <div class="card-title">
+                            <span>📋</span> Test Procedure
+                        </div>
+                        <div class="procedure-btns">
+                            <select class="procedure-select" id="procedureSelect">
+                                <option value="TP-001">TP-001: Nominal Mode Checkout</option>
+                                <option value="TP-002">TP-002: Slew Maneuver Test</option>
+                                <option value="TP-003">TP-003: Safe Mode Entry/Exit</option>
+                                <option value="TP-004">TP-004: Momentum Dump</option>
+                            </select>
+                            <button class="procedure-btn" onclick="startProcedure()">Start</button>
+                            <button class="procedure-btn primary" onclick="nextStep()">Next Step</button>
+                        </div>
+                    </div>
+                    <div class="procedure-steps" id="procedureSteps">
+                        <div class="procedure-step completed">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <div class="step-title">Verify Initial State</div>
+                                <div class="step-description">Confirm satellite in STANDBY mode</div>
+                            </div>
+                            <div class="step-status pass">PASS</div>
+                        </div>
+                        <div class="procedure-step active">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <div class="step-title">Command Nominal Mode</div>
+                                <div class="step-description">Send SET_NOMINAL and verify transition</div>
+                            </div>
+                            <div class="step-status running">RUNNING</div>
+                        </div>
+                        <div class="procedure-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <div class="step-title">Verify Attitude Control</div>
+                                <div class="step-description">Confirm RW enabled and converging</div>
+                            </div>
+                            <div class="step-status pending">PENDING</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Telemetry -->
+            <div class="telemetry-panel">
+                <div class="telemetry-header">
+                    <span class="telemetry-title">📡 LIVE TELEMETRY</span>
+                    <span style="font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: var(--text-muted);">
+                        <span id="tlmRate">1</span> Hz
+                    </span>
+                </div>
+                <div class="telemetry-content">
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">GNC Status</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Attitude Mode</span>
+                            <span class="telemetry-value nominal" id="tlmAttMode">NADIR_POINTING</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Pointing Error</span>
+                            <span class="telemetry-value" id="tlmPointErr">0.05°</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Sun Angle</span>
+                            <span class="telemetry-value" id="tlmSunAngle">45.2°</span>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Reaction Wheels</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">RW-1 Speed</span>
+                            <span class="telemetry-value" id="tlmRw1">0 RPM</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">RW-2 Speed</span>
+                            <span class="telemetry-value" id="tlmRw2">0 RPM</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">RW-3 Speed</span>
+                            <span class="telemetry-value" id="tlmRw3">0 RPM</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">RW-4 Speed</span>
+                            <span class="telemetry-value" id="tlmRw4">1000 RPM</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Total Momentum</span>
+                            <span class="telemetry-value" id="tlmMomentum">0.05 Nms</span>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Sensors</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Magnetometer</span>
+                            <span class="telemetry-value nominal" id="tlmMag">NOMINAL</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Rate Sensor</span>
+                            <span class="telemetry-value nominal" id="tlmArs">NOMINAL</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Sun Sensors</span>
+                            <span class="telemetry-value nominal" id="tlmSs">4/6 ILLUMINATED</span>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Power</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Bus Voltage</span>
+                            <span class="telemetry-value nominal" id="tlmVbus">28.2 V</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Current Draw</span>
+                            <span class="telemetry-value" id="tlmCurrent">1.2 A</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Battery SoC</span>
+                            <span class="telemetry-value nominal" id="tlmBattery">92%</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Eclipse</span>
+                            <span class="telemetry-value" id="tlmEclipse">NO</span>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Orbit</div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Altitude</span>
+                            <span class="telemetry-value" id="tlmAlt">400.2 km</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Latitude</span>
+                            <span class="telemetry-value" id="tlmLat">23.5° N</span>
+                        </div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">Longitude</span>
+                            <span class="telemetry-value" id="tlmLon">45.2° E</span>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Command Log</div>
+                        <div class="event-log" id="commandLog">
+                            <div class="log-entry">
+                                <span class="log-time">--:--:--</span>
+                                <span class="log-message">Awaiting commands...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-group">
+                        <div class="telemetry-group-title">Event Log</div>
+                        <div class="event-log" id="eventLog">
+                            <div class="log-entry">
+                                <span class="log-time">00:00:00</span>
+                                <span class="log-message info">SCOE session started</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">✓</span>
+        <span id="toastMessage">Command sent</span>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/api';
+        let telemetryData = {};
+        let currentMode = 'NOMINAL';
+        let selectedScenario = 'LEO_NOMINAL';
+        let missionStartTime = Date.now();
+        let rwTorques = [0, 0, 0, 0];
+        let sadaAngles = [0, 0];
+        let commandHistory = [];
+        let eventHistory = [];
+        let currentProcedureStep = 2;
+
+        // Scenarios
+        const scenarios = {
+            'LEO_NOMINAL': { name: 'LEO Nominal Operations', category: 'Nominal' },
+            'DETUMBLE': { name: 'High Rate Detumble', category: 'Safe Mode' },
+            'SAFE_MODE': { name: 'Safe Mode Recovery', category: 'Recovery' },
+            'ECLIPSE': { name: 'Eclipse Entry', category: 'Transitions' },
+            'SLEW_LARGE': { name: 'Large Angle Slew', category: 'Maneuvers' },
+            'GS_PASS': { name: 'Ground Station Pass', category: 'Communications' }
+        };
+
+        // Initialize UI
+        function initUI() {
+            initRWGrid();
+            initThrusterGrid();
+            initSADAGrid();
+            initAttitudeCanvas();
+            addEvent('SCOE initialized', 'info');
+        }
+
+        function initRWGrid() {
+            const grid = document.getElementById('rwGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                grid.innerHTML += `
+                    <div class="hw-control">
+                        <div class="hw-name rw">RW ${i}</div>
+                        <div class="hw-value" id="rwSpeed${i}">0 RPM</div>
+                        <div class="hw-gauge">
+                            <div class="hw-gauge-fill" id="rwGauge${i}" style="width: 50%"></div>
+                        </div>
+                        <input type="range" class="hw-slider" id="rwSlider${i}" 
+                            min="-0.2" max="0.2" step="0.01" value="0"
+                            oninput="updateRWSlider(${i})">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.3rem;">
+                            <span id="rwTorqueVal${i}">0.00 Nm</span>
+                        </div>
+                        <button class="hw-btn primary" onclick="applyRWTorque(${i})">Apply</button>
+                    </div>
+                `;
+            }
+        }
+
+        function initThrusterGrid() {
+            const grid = document.getElementById('thrusterGrid');
+            const dirs = ['+X', '-X', '+Y', '-Y'];
+            grid.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                grid.innerHTML += `
+                    <div class="hw-control">
+                        <div class="hw-name thr">THR ${i}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">${dirs[i]} Axis</div>
+                        <div class="thruster-status" id="thrStatus${i}">🚀</div>
+                        <div class="thruster-btns">
+                            <button class="hw-btn fire" onclick="fireThruster(${i}, true)">🔥</button>
+                            <button class="hw-btn stop" onclick="fireThruster(${i}, false)">■</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function initSADAGrid() {
+            const grid = document.getElementById('sadaGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 2; i++) {
+                grid.innerHTML += `
+                    <div class="hw-control">
+                        <div class="hw-name sada">SADA ${i}</div>
+                        <div class="hw-value" id="sadaAngle${i}">0°</div>
+                        <input type="range" class="hw-slider" id="sadaSlider${i}"
+                            min="-180" max="180" step="1" value="0"
+                            oninput="updateSadaSlider(${i})">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.3rem;">
+                            <span id="sadaSliderVal${i}">0°</span>
+                        </div>
+                        <button class="hw-btn primary" onclick="applySadaAngle(${i})">Set</button>
+                    </div>
+                `;
+            }
+        }
+
+        function initAttitudeCanvas() {
+            updateAttitudeDisplay();
+        }
+
+        function updateAttitudeDisplay() {
+            const canvas = document.getElementById('attitudeCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = 'rgba(0, 10, 20, 0.9)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 80;
+            
+            const roll = parseFloat(document.getElementById('rollValue').textContent) || 0;
+            const pitch = parseFloat(document.getElementById('pitchValue').textContent) || 0;
+            
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(roll * Math.PI / 180 * 5); // Amplify for visibility
+            
+            // Sky
+            ctx.fillStyle = '#1a3a5c';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, Math.PI, 0);
+            ctx.fill();
+            
+            // Ground
+            ctx.fillStyle = '#2a1a0a';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI);
+            ctx.fill();
+            
+            // Horizon line
+            ctx.strokeStyle = '#00d4ff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-radius, 0);
+            ctx.lineTo(radius, 0);
+            ctx.stroke();
+            
+            // Pitch lines
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.5)';
+            ctx.lineWidth = 1;
+            for (let i = -2; i <= 2; i++) {
+                if (i !== 0) {
+                    const y = i * 15;
+                    ctx.beginPath();
+                    ctx.moveTo(-20, y);
+                    ctx.lineTo(20, y);
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.restore();
+            
+            // Aircraft symbol
+            ctx.strokeStyle = '#ffaa00';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX - 35, centerY);
+            ctx.lineTo(centerX - 10, centerY);
+            ctx.moveTo(centerX + 10, centerY);
+            ctx.lineTo(centerX + 35, centerY);
+            ctx.moveTo(centerX, centerY - 5);
+            ctx.lineTo(centerX, centerY + 8);
+            ctx.stroke();
+            
+            // Outer ring
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius + 10, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Labels
+            ctx.fillStyle = '#00d4ff';
+            ctx.font = '10px "Share Tech Mono"';
+            ctx.textAlign = 'center';
+            ctx.fillText('N', centerX, centerY - radius - 15);
+            ctx.fillText('S', centerX, centerY + radius + 22);
+            ctx.fillText('E', centerX + radius + 18, centerY + 4);
+            ctx.fillText('W', centerX - radius - 18, centerY + 4);
+        }
+
+        // Update functions
+        function updateRWSlider(id) {
+            const slider = document.getElementById(`rwSlider${id}`);
+            const val = parseFloat(slider.value);
+            rwTorques[id] = val;
+            document.getElementById(`rwTorqueVal${id}`).textContent = val.toFixed(2) + ' Nm';
+        }
+
+        function updateSadaSlider(id) {
+            const slider = document.getElementById(`sadaSlider${id}`);
+            const val = parseInt(slider.value);
+            sadaAngles[id] = val;
+            document.getElementById(`sadaSliderVal${id}`).textContent = val + '°';
+        }
+
+        // API calls
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            try {
+                const options = { method, headers: { 'Content-Type': 'application/json' } };
+                if (body) options.body = JSON.stringify(body);
+                const response = await fetch(API_BASE + endpoint, options);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                showToast('Connection error', false);
+                return null;
+            }
+        }
+
+        // Commands
+        function selectScenario() {
+            selectedScenario = document.getElementById('scenarioSelect').value;
+            const scenario = scenarios[selectedScenario];
+            addEvent(`Selected scenario: ${scenario.name}`, 'info');
+        }
+
+        async function injectScenario() {
+            const scenario = scenarios[selectedScenario];
+            document.getElementById('activeScenario').textContent = scenario.name.toUpperCase();
+            addCommand(`INJECT: ${scenario.name}`);
+            addEvent(`Scenario injected: ${scenario.name}`, 'success');
+            showToast(`Scenario injected: ${scenario.name}`, true);
+            
+            // Reset simulation state based on scenario
+            if (selectedScenario === 'DETUMBLE') {
+                currentMode = 'DETUMBLE';
+            } else if (selectedScenario === 'SAFE_MODE') {
+                currentMode = 'SUN_SAFE';
+            } else {
+                currentMode = 'NOMINAL';
+            }
+            document.getElementById('modeStatus').textContent = currentMode;
+        }
+
+        async function sendModeCommand(command) {
+            const result = await apiCall('/command', 'POST', { command });
+            addCommand(command);
+            
+            // Update mode display
+            const modeMap = {
+                'SET_NOMINAL': 'NOMINAL',
+                'SET_SAFE': 'SUN_SAFE',
+                'SET_DETUMBLE': 'B_DOT',
+                'SET_SUN_POINT': 'SUN_POINTING',
+                'SET_NADIR': 'NADIR_POINTING'
+            };
+            currentMode = modeMap[command] || currentMode;
+            document.getElementById('modeStatus').textContent = currentMode;
+            document.getElementById('tlmAttMode').textContent = currentMode;
+            
+            addEvent(`Mode transition: ${currentMode}`, 'success');
+            showToast(`Mode: ${currentMode}`, true);
+        }
+
+        async function sendSlewCommand(axis, angle) {
+            const command = `SLEW_${axis}_${angle > 0 ? 'POS' : 'NEG'}_${Math.abs(angle)}`;
+            await apiCall('/command', 'POST', { command });
+            addCommand(command);
+            addEvent(`Slew commanded: ${axis} ${angle}°`, 'info');
+            showToast(`Slew: ${axis} ${angle}°`, true);
+        }
+
+        async function sendActuatorCommand(command) {
+            await apiCall('/command', 'POST', { command });
+            addCommand(command);
+            addEvent(`Actuator command: ${command}`, 'info');
+            showToast(`Command: ${command}`, true);
+        }
+
+        async function startSimulation() {
+            const result = await apiCall('/simulation/start', 'POST');
+            if (result?.success) {
+                missionStartTime = Date.now();
+                addCommand('START_SIMULATION');
+                addEvent('Simulation started', 'success');
+                showToast('Simulation started', true);
+            }
+        }
+
+        async function stopSimulation() {
+            const result = await apiCall('/simulation/stop', 'POST');
+            if (result?.success) {
+                addCommand('STOP_SIMULATION');
+                addEvent('Simulation stopped', 'warning');
+                showToast('Simulation stopped', true);
+            }
+        }
+
+        async function resetSimulation() {
+            const result = await apiCall('/simulation/reset', 'POST');
+            if (result?.success) {
+                addCommand('RESET_SIMULATION');
+                addEvent('Simulation reset', 'info');
+                showToast('Simulation reset', true);
+            }
+        }
+
+        async function applyRWTorque(id) {
+            const torque = rwTorques[id];
+            const result = await apiCall(`/rw/${id}/torque`, 'POST', { torque });
+            if (result?.success) {
+                addCommand(`RW${id}_TORQUE: ${torque.toFixed(2)} Nm`);
+                showToast(`RW ${id} torque: ${torque.toFixed(2)} Nm`, true);
+            }
+        }
+
+        async function fireThruster(id, firing) {
+            const result = await apiCall(`/thruster/${id}/fire`, 'POST', { firing });
+            if (result?.success) {
+                const status = document.getElementById(`thrStatus${id}`);
+                if (firing) {
+                    status.classList.add('firing');
+                    addCommand(`THR${id}_FIRE`);
+                    addEvent(`Thruster ${id} FIRING`, 'warning');
+                } else {
+                    status.classList.remove('firing');
+                    addCommand(`THR${id}_STOP`);
+                }
+                showToast(`Thruster ${id} ${firing ? 'FIRING' : 'stopped'}`, true);
+            }
+        }
+
+        async function applySadaAngle(id) {
+            const angle = sadaAngles[id];
+            const result = await apiCall(`/sada/${id}/angle`, 'POST', { angle });
+            if (result?.success) {
+                addCommand(`SADA${id}_ANGLE: ${angle}°`);
+                showToast(`SADA ${id} angle: ${angle}°`, true);
+            }
+        }
+
+        function emergencyStop() {
+            if (confirm('CONFIRM EMERGENCY STOP?\n\nThis will halt all operations.')) {
+                apiCall('/simulation/stop', 'POST');
+                currentMode = 'E_STOP';
+                document.getElementById('modeStatus').textContent = 'E_STOP';
+                document.getElementById('modeStatus').style.color = 'var(--accent-red)';
+                addCommand('EMERGENCY_STOP');
+                addEvent('EMERGENCY STOP ACTIVATED', 'error');
+                showToast('EMERGENCY STOP', false);
+            }
+        }
+
+        // Test Procedures
+        function startProcedure() {
+            currentProcedureStep = 1;
+            addEvent(`Started procedure: ${document.getElementById('procedureSelect').value}`, 'info');
+            showToast('Procedure started', true);
+        }
+
+        function nextStep() {
+            currentProcedureStep++;
+            addEvent(`Advanced to step ${currentProcedureStep}`, 'info');
+        }
+
+        // Logging
+        function addCommand(cmd) {
+            const timestamp = new Date().toISOString().substr(11, 8);
+            const logDiv = document.getElementById('commandLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">${timestamp}</span><span class="log-message info">${cmd}</span>`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+            commandHistory.push({ timestamp, command: cmd });
+            while (logDiv.children.length > 20) logDiv.removeChild(logDiv.lastChild);
+        }
+
+        function addEvent(message, type = 'info') {
+            const timestamp = new Date().toISOString().substr(11, 8);
+            const logDiv = document.getElementById('eventLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">${timestamp}</span><span class="log-message ${type}">${message}</span>`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+            eventHistory.push({ timestamp, message, type });
+            while (logDiv.children.length > 20) logDiv.removeChild(logDiv.lastChild);
+        }
+
+        // Toast
+        function showToast(message, success) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+            
+            toast.classList.remove('success', 'error');
+            toast.classList.add(success ? 'success' : 'error');
+            icon.textContent = success ? '✓' : '✗';
+            msg.textContent = message;
+            
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Telemetry update
+        function updateTelemetryUI(data) {
+            // Connection status
+            document.getElementById('connectionStatus').className = 'status-dot connected';
+            document.getElementById('connectionText').textContent = 'Connected';
+
+            // Simulation status
+            const simRunning = data.sim_running === 1;
+            document.getElementById('simStatus').className = 'status-dot ' + (simRunning ? 'running' : 'warning');
+            document.getElementById('simText').textContent = 'SIM: ' + (simRunning ? 'RUNNING' : 'STOPPED');
+            
+            // Time
+            const simTime = data.sim_time || 0;
+            const hours = String(Math.floor(simTime / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((simTime % 3600) / 60)).padStart(2, '0');
+            const secs = String(Math.floor(simTime % 60)).padStart(2, '0');
+            document.getElementById('simTime').textContent = `${hours}:${mins}:${secs}`;
+            document.getElementById('simTimeViz').textContent = simTime.toFixed(1) + 's';
+
+            // Attitude rates
+            document.getElementById('rollValue').textContent = (data.rate_x || 0).toFixed(2);
+            document.getElementById('pitchValue').textContent = (data.rate_y || 0).toFixed(2);
+            document.getElementById('yawValue').textContent = (data.rate_z || 0).toFixed(2);
+
+            // Quaternion
+            document.getElementById('q0').textContent = (data.att_q_w || 1).toFixed(4);
+            document.getElementById('q1').textContent = (data.att_q_x || 0).toFixed(4);
+            document.getElementById('q2').textContent = (data.att_q_y || 0).toFixed(4);
+            document.getElementById('q3').textContent = (data.att_q_z || 0).toFixed(4);
+
+            // Reaction wheels
+            for (let i = 0; i < 4; i++) {
+                const speed = data[`rw${i}_speed`] || 0;
+                document.getElementById(`rwSpeed${i}`).textContent = speed.toFixed(0) + ' RPM';
+                document.getElementById(`tlmRw${i+1}`).textContent = speed.toFixed(0) + ' RPM';
+                const gaugePercent = ((speed + 6000) / 12000) * 100;
+                document.getElementById(`rwGauge${i}`).style.width = Math.max(0, Math.min(100, gaugePercent)) + '%';
+            }
+
+            // SADA
+            for (let i = 0; i < 2; i++) {
+                const angle = data[`sada${i}_angle`] || 0;
+                document.getElementById(`sadaAngle${i}`).textContent = angle.toFixed(0) + '°';
+            }
+
+            // Orbit
+            const posX = data.pos_x || 0;
+            const posY = data.pos_y || 0;
+            const posZ = data.pos_z || 0;
+            const altitude = Math.sqrt(posX*posX + posY*posY + posZ*posZ) / 1000 - 6371;
+            document.getElementById('tlmAlt').textContent = altitude.toFixed(1) + ' km';
+
+            // Eclipse
+            const eclipse = data.in_eclipse === 1;
+            document.getElementById('tlmEclipse').textContent = eclipse ? 'YES' : 'NO';
+
+            // Update attitude canvas
+            updateAttitudeDisplay();
+        }
+
+        // Poll telemetry
+        async function pollTelemetry() {
+            try {
+                const response = await fetch(API_BASE + '/telemetry');
+                const result = await response.json();
+                if (result?.data) {
+                    telemetryData = result.data;
+                    updateTelemetryUI(telemetryData);
+                }
+            } catch (error) {
+                document.getElementById('connectionStatus').className = 'status-dot disconnected';
+                document.getElementById('connectionText').textContent = 'Disconnected';
+            }
+        }
+
+        // Initialize
+        initUI();
+        pollTelemetry();
+        setInterval(pollTelemetry, 500);
+    </script>
+</body>
+</html>

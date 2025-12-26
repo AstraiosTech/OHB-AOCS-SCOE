@@ -1,0 +1,89 @@
+{
+    "scenario_id": "SAFE_MODE_001",
+    "name": "Safe Mode Recovery",
+    "description": "Recovery from safe mode to nominal operations - tests mode transition logic",
+    "category": "Recovery",
+    "version": "1.0.0",
+    "created_by": "GNC Team",
+    "created_date": "2024-11-27",
+    "approved_by": "V&V Lead",
+    
+    "orbital_elements": {
+        "epoch": "2024-01-01T00:00:00Z",
+        "semi_major_axis_km": 6778.137,
+        "eccentricity": 0.0001,
+        "inclination_deg": 51.6,
+        "raan_deg": 45.0,
+        "argument_of_perigee_deg": 0.0,
+        "true_anomaly_deg": 90.0,
+        "orbital_period_min": 92.5
+    },
+    
+    "initial_attitude": {
+        "quaternion": [0.1, -0.2, 0.1, 0.968],
+        "angular_rates_deg_s": [0.2, -0.1, 0.15],
+        "attitude_mode": "SUN_SAFE"
+    },
+    
+    "initial_state": {
+        "power_mode": "SAFE",
+        "thermal_state": "COLD",
+        "comms_state": "BEACON"
+    },
+    
+    "environment": {
+        "sun_vector_body": [0.866, 0.0, 0.5],
+        "magnetic_field_nT": [20000.0, 10000.0, -35000.0],
+        "eclipse": false,
+        "solar_flux_W_m2": 1361.0
+    },
+    
+    "sensor_injection": {
+        "magnetometer": {
+            "enabled": true,
+            "noise_nT": 10.0,
+            "bias_nT": [5.0, -3.0, 2.0]
+        },
+        "sun_sensor": {
+            "enabled": true,
+            "noise_deg": 0.5,
+            "fov_deg": 60.0
+        },
+        "rate_sensor": {
+            "enabled": true,
+            "noise_deg_s": 0.001,
+            "bias_deg_hr": [0.1, -0.05, 0.08]
+        }
+    },
+    
+    "actuator_config": {
+        "reaction_wheels": {
+            "enabled": true,
+            "max_torque_Nm": 0.01,
+            "max_momentum_Nms": 0.5,
+            "initial_speed_rpm": [100, -200, 150, 500]
+        },
+        "torque_rods": {
+            "enabled": true,
+            "max_dipole_Am2": 1.0
+        }
+    },
+    
+    "recovery_sequence": [
+        "Verify sun acquisition",
+        "Check power positive",
+        "Enable star tracker",
+        "Transition to NOMINAL mode",
+        "Acquire nadir pointing",
+        "Resume normal operations"
+    ],
+    
+    "success_criteria": {
+        "time_to_nominal_min": 30,
+        "power_positive": true,
+        "final_pointing_error_deg": 1.0
+    },
+    
+    "test_notes": "Simulates recovery from anomaly-triggered safe mode"
+}
+
