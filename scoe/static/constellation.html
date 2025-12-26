@@ -799,6 +799,53 @@
             }
         }
 
+        // Simplified continent outlines (lat, lon coordinates)
+        const continents = {
+            northAmerica: [
+                [-10, 170], [15, 165], [30, 170], [50, 170], [60, 160], [70, 160], [72, 140],
+                [70, 130], [60, 130], [55, 125], [50, 120], [45, 115], [40, 120], [35, 115],
+                [30, 110], [25, 105], [20, 100], [15, 95], [20, 90], [30, 85], [25, 80],
+                [30, 75], [40, 75], [45, 65], [50, 55], [60, 60], [65, 55], [70, 65],
+                [75, 60], [70, 80], [65, 95], [55, 105], [50, 125], [40, 130], [30, 125],
+                [20, 115], [10, 105], [5, 95], [5, 80], [10, 75], [20, 75], [25, 80],
+                [18, 95], [15, 100], [10, 100], [-10, 170]
+            ],
+            southAmerica: [
+                [12, 70], [5, 75], [0, 78], [-5, 80], [-10, 75], [-15, 72], [-23, 70],
+                [-35, 68], [-40, 73], [-45, 72], [-50, 73], [-55, 68], [-55, 63], [-50, 60],
+                [-45, 63], [-40, 58], [-35, 55], [-30, 50], [-25, 45], [-20, 40], [-15, 43],
+                [-10, 45], [-5, 50], [0, 50], [5, 55], [10, 60], [12, 70]
+            ],
+            europe: [
+                [35, -10], [38, -5], [40, 0], [43, 3], [46, 1], [47, 5], [50, 5], [53, 7],
+                [55, 10], [57, 10], [60, 15], [63, 20], [65, 25], [70, 28], [70, 30],
+                [67, 40], [60, 35], [55, 35], [50, 30], [48, 15], [45, 12], [42, 10],
+                [40, 5], [38, 5], [36, 0], [35, -10]
+            ],
+            africa: [
+                [35, -10], [30, -10], [25, -15], [20, -17], [15, -17], [10, -15], [5, -10],
+                [5, 0], [0, 10], [-5, 15], [-10, 20], [-15, 25], [-20, 28], [-25, 30],
+                [-30, 28], [-35, 20], [-35, 17], [-30, 15], [-25, 15], [-20, 17], [-15, 15],
+                [-10, 10], [-5, 5], [0, 5], [5, 10], [10, 15], [12, 18], [15, 20],
+                [18, 25], [20, 30], [22, 35], [25, 35], [30, 32], [32, 30], [35, 35],
+                [37, 10], [35, -10]
+            ],
+            asia: [
+                [70, 30], [75, 50], [78, 70], [75, 100], [70, 130], [65, 140], [60, 150],
+                [55, 160], [50, 140], [45, 135], [40, 130], [35, 130], [30, 120], [25, 105],
+                [20, 100], [15, 100], [10, 95], [5, 100], [0, 105], [-5, 105], [-8, 110],
+                [-5, 115], [0, 120], [5, 125], [0, 130], [-5, 130], [-10, 125], [-10, 115],
+                [-5, 110], [0, 105], [5, 100], [10, 95], [15, 80], [20, 75], [25, 70],
+                [30, 55], [35, 45], [40, 40], [45, 40], [50, 45], [55, 50], [60, 45],
+                [65, 60], [70, 55], [70, 30]
+            ],
+            australia: [
+                [-10, 140], [-15, 130], [-20, 120], [-25, 115], [-30, 115], [-35, 118],
+                [-37, 140], [-35, 150], [-30, 153], [-25, 153], [-20, 150], [-15, 145],
+                [-10, 145], [-10, 140]
+            ]
+        };
+
         function drawOrbitView() {
             const w = canvas.width;
             const h = canvas.height;
@@ -819,10 +866,10 @@
                 ctx.stroke();
             }
             
-            // Earth
+            // Earth ocean gradient
             const earthRadius = 6371 * scale;
             const earthGradient = ctx.createRadialGradient(cx - earthRadius * 0.3, cy - earthRadius * 0.3, 0, cx, cy, earthRadius);
-            earthGradient.addColorStop(0, '#4488cc');
+            earthGradient.addColorStop(0, '#3377bb');
             earthGradient.addColorStop(0.5, '#2266aa');
             earthGradient.addColorStop(1, '#114488');
             
@@ -831,11 +878,88 @@
             ctx.fillStyle = earthGradient;
             ctx.fill();
             
-            // Earth glow
+            // Draw continents
+            ctx.save();
             ctx.beginPath();
-            ctx.arc(cx, cy, earthRadius + 5, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(68, 136, 204, 0.3)';
-            ctx.lineWidth = 10;
+            ctx.arc(cx, cy, earthRadius, 0, Math.PI * 2);
+            ctx.clip();
+            
+            const earthRotation = simTime * 0.02; // Earth rotation over time
+            
+            function latLonToXY(lat, lon) {
+                // Convert lat/lon to position on the projected circle
+                const lonRad = (lon + earthRotation) * Math.PI / 180;
+                const latRad = lat * Math.PI / 180;
+                
+                if (viewMode === 'polar') {
+                    // Top-down view from North Pole
+                    const r = earthRadius * Math.cos(latRad);
+                    return {
+                        x: cx + r * Math.sin(lonRad),
+                        y: cy - r * Math.cos(lonRad),
+                        visible: lat > -10 // Only show northern hemisphere clearly
+                    };
+                } else if (viewMode === 'equatorial') {
+                    // View from equator
+                    const x = cx + earthRadius * Math.cos(latRad) * Math.sin(lonRad);
+                    const y = cy - earthRadius * Math.sin(latRad);
+                    const z = Math.cos(latRad) * Math.cos(lonRad);
+                    return { x, y, visible: z > 0 };
+                } else {
+                    // 3D tilted view
+                    const tilt = 23.5 * Math.PI / 180;
+                    const x = earthRadius * Math.cos(latRad) * Math.sin(lonRad);
+                    const y = earthRadius * (Math.sin(latRad) * Math.cos(tilt) - Math.cos(latRad) * Math.cos(lonRad) * Math.sin(tilt));
+                    const z = Math.sin(latRad) * Math.sin(tilt) + Math.cos(latRad) * Math.cos(lonRad) * Math.cos(tilt);
+                    return { x: cx + x, y: cy - y * 0.6 + earthRadius * 0.2, visible: z > -0.1 };
+                }
+            }
+            
+            // Draw each continent
+            const continentColor = '#2d5a3d'; // Dark green for land
+            const continentStroke = '#3d7a4d';
+            
+            Object.values(continents).forEach(coords => {
+                ctx.beginPath();
+                let started = false;
+                let prevVisible = false;
+                
+                coords.forEach((point, i) => {
+                    const pos = latLonToXY(point[0], point[1]);
+                    
+                    if (pos.visible) {
+                        if (!started || !prevVisible) {
+                            ctx.moveTo(pos.x, pos.y);
+                            started = true;
+                        } else {
+                            ctx.lineTo(pos.x, pos.y);
+                        }
+                    }
+                    prevVisible = pos.visible;
+                });
+                
+                ctx.closePath();
+                ctx.fillStyle = continentColor;
+                ctx.fill();
+                ctx.strokeStyle = continentStroke;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            });
+            
+            ctx.restore();
+            
+            // Earth atmosphere glow
+            ctx.beginPath();
+            ctx.arc(cx, cy, earthRadius + 3, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(100, 180, 255, 0.4)';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+            
+            // Earth outline
+            ctx.beginPath();
+            ctx.arc(cx, cy, earthRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(68, 136, 204, 0.5)';
+            ctx.lineWidth = 1;
             ctx.stroke();
             
             // Draw satellites
@@ -921,12 +1045,37 @@
             const w = groundCanvas.width;
             const h = groundCanvas.height;
             
-            groundCtx.fillStyle = 'rgba(10, 20, 30, 0.9)';
+            // Ocean background
+            groundCtx.fillStyle = 'rgba(15, 40, 60, 0.95)';
             groundCtx.fillRect(0, 0, w, h);
             
+            // Draw continents on ground track (Mercator projection)
+            function latLonToCanvas(lat, lon) {
+                return {
+                    x: (lon + 180) / 360 * w,
+                    y: (90 - lat) / 180 * h
+                };
+            }
+            
+            groundCtx.fillStyle = 'rgba(45, 90, 60, 0.8)';
+            groundCtx.strokeStyle = 'rgba(60, 120, 80, 0.6)';
+            groundCtx.lineWidth = 0.5;
+            
+            Object.values(continents).forEach(coords => {
+                groundCtx.beginPath();
+                coords.forEach((point, i) => {
+                    const pos = latLonToCanvas(point[0], point[1]);
+                    if (i === 0) groundCtx.moveTo(pos.x, pos.y);
+                    else groundCtx.lineTo(pos.x, pos.y);
+                });
+                groundCtx.closePath();
+                groundCtx.fill();
+                groundCtx.stroke();
+            });
+            
             // Grid
-            groundCtx.strokeStyle = 'rgba(0, 212, 255, 0.1)';
-            groundCtx.lineWidth = 1;
+            groundCtx.strokeStyle = 'rgba(0, 212, 255, 0.15)';
+            groundCtx.lineWidth = 0.5;
             for (let i = 1; i < 4; i++) {
                 groundCtx.beginPath();
                 groundCtx.moveTo(0, h * i / 4);
