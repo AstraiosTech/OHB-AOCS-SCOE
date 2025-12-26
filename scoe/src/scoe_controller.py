@@ -427,6 +427,8 @@ class SCOEController:
         if os.path.exists(static_path):
             app.router.add_static('/static/', static_path)
             app.router.add_get('/', self._handle_index)
+            app.router.add_get('/constellation.html', self._handle_constellation)
+            app.router.add_get('/{filename}.html', self._handle_html_file)
         
         return app
     
@@ -439,6 +441,27 @@ class SCOEController:
                 content = f.read()
             return web.Response(text=content, content_type='text/html')
         return web.Response(text='Control panel not found', status=404)
+    
+    async def _handle_constellation(self, request: web.Request) -> web.Response:
+        """Serve the constellation view page"""
+        import os
+        static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'constellation.html')
+        if os.path.exists(static_path):
+            with open(static_path, 'r') as f:
+                content = f.read()
+            return web.Response(text=content, content_type='text/html')
+        return web.Response(text='Constellation page not found', status=404)
+    
+    async def _handle_html_file(self, request: web.Request) -> web.Response:
+        """Serve any HTML file from static directory"""
+        import os
+        filename = request.match_info.get('filename', '')
+        static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', f'{filename}.html')
+        if os.path.exists(static_path):
+            with open(static_path, 'r') as f:
+                content = f.read()
+            return web.Response(text=content, content_type='text/html')
+        return web.Response(text='Page not found', status=404)
     
     @web.middleware
     async def _cors_middleware(self, request: web.Request, handler):
