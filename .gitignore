@@ -55,10 +55,9 @@ Aurora_SOCC/data_collection/output/
 # Jupyter
 .ipynb_checkpoints/
 
-# Screenshots
-*.png
-*.jpg
-*.jpeg
+# Screenshots (temp files)
+# Keep project screenshots
+!screenshots/*.png
 
 # Except converted images from PDF
 !converted_output/**/*.jpeg
